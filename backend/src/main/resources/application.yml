@@ -1,0 +1,22 @@
+spring:
+  application:
+    name: smart-expense-tracker
+  datasource:
+    url: jdbc:mysql://localhost:3306/expense_tracker?createDatabaseIfNotExist=true&useSSL=false&serverTimezone=UTC
+    username: root
+    password: yourpassword123
+    driver-class-name: com.mysql.cj.jdbc.Driver
+  jpa:
+    hibernate:
+      ddl-auto: update
+    show-sql: true
+    properties:
+      hibernate:
+        format_sql: true
+
+jwt:
+  secret: super_secret_key_change_in_production_2026_smart_expense_tracker_123456789
+  expiration: 86400000
+
+server:
+  port: 8080
