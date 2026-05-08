@@ -1,4 +1,4 @@
-package com.smart.expensetracker.security;
+package com.smart.expense_tracker.security;
 
 import io.jsonwebtoken.*;
 import io.jsonwebtoken.security.Keys;

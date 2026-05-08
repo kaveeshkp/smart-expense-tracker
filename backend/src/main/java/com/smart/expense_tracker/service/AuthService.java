@@ -1,21 +1,26 @@
-package com.smart.expensetracker.service;
+package com.smart.expense_tracker.service;
 
-import com.smart.expensetracker.dto.AuthRequest;
-import com.smart.expensetracker.dto.AuthResponse;
-import com.smart.expensetracker.entity.User;
-import com.smart.expensetracker.repository.UserRepository;
-import com.smart.expensetracker.security.JwtUtil;
-import lombok.RequiredArgsConstructor;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.stereotype.Service;
 
+import com.smart.expense_tracker.dto.AuthRequest;
+import com.smart.expense_tracker.dto.AuthResponse;
+import com.smart.expense_tracker.entity.User;
+import com.smart.expense_tracker.repository.UserRepository;
+import com.smart.expense_tracker.security.JwtUtil;
+
 @Service
-@RequiredArgsConstructor
 public class AuthService {
 
     private final UserRepository userRepository;
     private final JwtUtil jwtUtil;
     private final BCryptPasswordEncoder passwordEncoder;
+
+    public AuthService(UserRepository userRepository, JwtUtil jwtUtil, BCryptPasswordEncoder passwordEncoder) {
+        this.userRepository = userRepository;
+        this.jwtUtil = jwtUtil;
+        this.passwordEncoder = passwordEncoder;
+    }
 
     public AuthResponse register(AuthRequest request) {
         if (userRepository.findByEmail(request.getEmail()).isPresent()) {

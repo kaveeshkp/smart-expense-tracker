@@ -1,7 +1,7 @@
-package com.smart.expensetracker.repository;
+package com.smart.expense_tracker.repository;
 
-import com.smart.expensetracker.entity.Expense;
-import com.smart.expensetracker.entity.User;
+import com.smart.expense_tracker.entity.Expense;
+import com.smart.expense_tracker.entity.User;
 import org.springframework.data.jpa.repository.JpaRepository;
 import java.time.LocalDate;
 import java.util.List;
