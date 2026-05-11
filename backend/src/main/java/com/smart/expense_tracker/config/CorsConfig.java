@@ -1,4 +1,4 @@
-package com.smart.expensetracker.config;
+package com.smart.expense_tracker.config;
 
 import java.util.Arrays;
 
