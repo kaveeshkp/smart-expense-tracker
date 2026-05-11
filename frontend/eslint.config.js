@@ -6,9 +6,17 @@ import { defineConfig, globalIgnores } from 'eslint/config'
 import tseslint from 'typescript-eslint'
 
 export default defineConfig([
-  globalIgnores(['dist']),
+  globalIgnores([
+    'dist',
+    'node_modules',
+    'vite.config.js',
+    'tailwind.config.js',
+    'postcss.config.js',
+    'eslint.config.js',
+    'tsconfig.node.json'
+  ]),
   {
-    files: ['**/*.{js,jsx,ts,tsx}'],
+    files: ['src/**/*.{js,jsx,ts,tsx}'],
     extends: [
       js.configs.recommended,
       ...tseslint.configs.recommended,
@@ -18,7 +26,7 @@ export default defineConfig([
     languageOptions: {
       globals: globals.browser,
       parser: tseslint.parser,
-      parserOptions: { 
+      parserOptions: {
         ecmaFeatures: { jsx: true },
         ecmaVersion: 2020,
         sourceType: 'module',
@@ -27,7 +35,10 @@ export default defineConfig([
     },
     rules: {
       'react-refresh/only-export-components': 'warn',
-      '@typescript-eslint/no-explicit-any': 'warn',
+      '@typescript-eslint/no-explicit-any': 'error',
+      'react-hooks/rules-of-hooks': 'error',
+      'react-hooks/exhaustive-deps': 'warn',
     },
   },
 ])
+

@@ -1,7 +1,7 @@
 import { useState } from 'react'
 import { Link } from 'react-router-dom'
 import { useAuth } from '../context/AuthContext'
-import { Eye, EyeOff, ArrowRight, TrendingUp } from 'lucide-react'
+import { Eye, EyeOff } from 'lucide-react'
 import { motion } from 'framer-motion'
 
 const Register = () => {
@@ -25,147 +25,239 @@ const Register = () => {
   }
 
   return (
-    <div className="min-h-screen flex">
-      {/* LEFT SIDE - Beautiful Accounting Visual */}
-      <div className="hidden lg:flex w-1/2 bg-gradient-to-br from-slate-900 via-blue-900 to-slate-900 relative overflow-hidden">
-        <div className="absolute inset-0 bg-[radial-gradient(#60a5fa_1px,transparent_1px)] bg-[length:50px_50px] opacity-5"></div>
-        
-        <div className="relative z-10 flex flex-col items-center justify-center w-full p-12 text-center">
-          {/* Logo/Icon */}
+    <div className="min-h-screen bg-gradient-to-br from-purple-600 via-blue-500 to-purple-600 flex items-center justify-center relative overflow-hidden">
+      {/* Background decorative elements */}
+      <div className="absolute top-0 right-0 w-96 h-96 bg-white rounded-full blur-3xl opacity-10 -mr-32 -mt-32"></div>
+      <div className="absolute bottom-0 left-0 w-96 h-96 bg-white rounded-full blur-3xl opacity-10 -ml-32 -mb-32"></div>
+
+      <div className="flex w-full max-w-7xl mx-auto relative z-10">
+        {/* LEFT SIDE - White Form Panel */}
+        <motion.div
+          initial={{ opacity: 0, x: -50 }}
+          animate={{ opacity: 1, x: 0 }}
+          transition={{ duration: 0.6 }}
+          className="hidden lg:flex lg:w-5/12 bg-white rounded-3xl shadow-2xl p-12 flex-col justify-center relative"
+        >
           <div className="mb-12">
-            <motion.div
-              initial={{ scale: 0, rotate: -180 }}
-              animate={{ scale: 1, rotate: 0 }}
-              transition={{ duration: 0.8, type: "spring", stiffness: 100 }}
-              className="w-32 h-32 mx-auto bg-gradient-to-br from-yellow-300 to-yellow-500 rounded-3xl flex items-center justify-center shadow-2xl shadow-yellow-500/40 relative"
-            >
-              <TrendingUp className="w-16 h-16 text-slate-900" strokeWidth={1.5} />
-              <div className="absolute inset-0 rounded-3xl bg-gradient-to-t from-black/20 to-transparent"></div>
-            </motion.div>
+            <h1 className="text-4xl font-bold text-gray-900 mb-2">FNCE.</h1>
+            <div className="w-12 h-1 bg-blue-600 rounded-full"></div>
           </div>
-          
-          <motion.div
-            initial={{ opacity: 0, y: 20 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{ duration: 0.6, delay: 0.2 }}
-          >
-            <h1 className="text-5xl font-bold text-white tracking-tight">ACCOUNTING</h1>
-            <p className="text-xl text-blue-300 mt-3 font-medium">Smart Expense Tracker</p>
-            
-            <div className="mt-12 text-blue-200 text-sm max-w-xs mx-auto leading-relaxed">
-              Join thousands of users tracking their expenses and building better financial habits today.
+
+          <div className="mb-8">
+            <h2 className="text-3xl font-bold text-gray-900 mb-2">Sign Up</h2>
+            <p className="text-gray-500 text-sm">
+              Already have an account?{' '}
+              <Link to="/login" className="text-blue-600 hover:text-blue-700 font-medium">
+                Log In
+              </Link>
+            </p>
+          </div>
+
+          <form onSubmit={handleSubmit} className="space-y-6">
+            <div>
+              <input
+                type="text"
+                value={fullName}
+                onChange={(e) => setFullName(e.target.value)}
+                className="w-full px-4 py-3 border border-gray-300 rounded-lg text-gray-900 placeholder-gray-400 focus:outline-none focus:border-blue-600 focus:ring-1 focus:ring-blue-600 transition-all"
+                placeholder="Full Name"
+                required
+              />
             </div>
-          </motion.div>
 
-          {/* Decorative elements */}
-          <div className="absolute bottom-20 left-12 text-7xl opacity-5 font-bold">₹</div>
-          <div className="absolute top-24 right-16 text-8xl opacity-5">📊</div>
-        </div>
+            <div>
+              <input
+                type="email"
+                value={email}
+                onChange={(e) => setEmail(e.target.value)}
+                className="w-full px-4 py-3 border border-gray-300 rounded-lg text-gray-900 placeholder-gray-400 focus:outline-none focus:border-blue-600 focus:ring-1 focus:ring-blue-600 transition-all"
+                placeholder="you@example.com"
+                required
+              />
+            </div>
 
-        {/* Subtle background circles */}
-        <div className="absolute -bottom-40 -left-40 w-80 h-80 bg-blue-500/10 rounded-full blur-3xl"></div>
-        <div className="absolute -top-40 -right-40 w-80 h-80 bg-cyan-500/10 rounded-full blur-3xl"></div>
-      </div>
+            <div className="relative">
+              <input
+                type={showPassword ? "text" : "password"}
+                value={password}
+                onChange={(e) => setPassword(e.target.value)}
+                className="w-full px-4 py-3 border border-gray-300 rounded-lg text-gray-900 placeholder-gray-400 focus:outline-none focus:border-blue-600 focus:ring-1 focus:ring-blue-600 transition-all"
+                placeholder="Create a strong password"
+                required
+                minLength={6}
+              />
+              <button
+                type="button"
+                onClick={() => setShowPassword(!showPassword)}
+                className="absolute right-4 top-1/2 -translate-y-1/2 text-gray-400 hover:text-gray-600"
+              >
+                {showPassword ? <EyeOff size={20} /> : <Eye size={20} />}
+              </button>
+            </div>
 
-      {/* RIGHT SIDE - Form */}
-      <div className="flex-1 flex items-center justify-center p-8 lg:p-12 bg-slate-950">
-        <div className="w-full max-w-sm">
-          <motion.div
-            initial={{ opacity: 0, y: 30 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{ duration: 0.5 }}
-          >
+            <motion.button
+              whileHover={{ scale: 1.01 }}
+              whileTap={{ scale: 0.98 }}
+              type="submit"
+              disabled={loading}
+              className="w-full py-3 bg-blue-600 hover:bg-blue-700 disabled:bg-gray-400 text-white font-semibold rounded-lg transition-all text-sm"
+            >
+              {loading ? (
+                <div className="w-4 h-4 border-2 border-white border-t-transparent rounded-full animate-spin mx-auto" />
+              ) : (
+                'Create Account'
+              )}
+            </motion.button>
+          </form>
+
+          <div className="mt-8 pt-8 border-t border-gray-200">
+            <p className="text-center text-gray-600 text-sm mb-4">or</p>
+            <div className="flex gap-3">
+              <button className="flex-1 py-2 border border-gray-300 rounded-lg text-gray-700 hover:bg-gray-50 transition-all text-sm font-medium">
+                <span className="flex items-center justify-center gap-2">
+                  <span>🔍</span>
+                  Sign Up
+                </span>
+              </button>
+              <button className="flex-1 py-2 border border-gray-300 rounded-lg text-gray-700 hover:bg-gray-50 transition-all text-sm font-medium">
+                <span>Sign Up</span>
+              </button>
+            </div>
+          </div>
+        </motion.div>
+
+        {/* RIGHT SIDE - Illustration Area */}
+        <motion.div
+          initial={{ opacity: 0, x: 50 }}
+          animate={{ opacity: 1, x: 0 }}
+          transition={{ duration: 0.6, delay: 0.2 }}
+          className="hidden lg:flex lg:w-7/12 bg-gradient-to-br from-blue-400 to-blue-600 rounded-3xl p-12 flex-col justify-center items-center relative overflow-hidden ml-8"
+        >
+          {/* Decorative circles */}
+          <div className="absolute top-10 right-12 w-20 h-20 bg-white rounded-full opacity-40"></div>
+          <div className="absolute top-24 right-20 w-28 h-28 bg-white rounded-full opacity-30"></div>
+          <div className="absolute top-8 right-40 w-16 h-16 bg-white rounded-full opacity-35"></div>
+
+          {/* Illustration box */}
+          <div className="mb-8 relative z-10">
+            <div className="bg-gray-800 rounded-2xl p-8 shadow-2xl w-80 h-48 flex items-center justify-center">
+              <svg className="w-full h-full" viewBox="0 0 200 150" fill="none">
+                {/* Chart visualization */}
+                <path d="M 20 120 Q 40 80, 60 90 Q 80 100, 100 70 Q 120 40, 140 50 Q 160 60, 180 30" stroke="#3b82f6" strokeWidth="2" />
+                <circle cx="40" cy="80" r="3" fill="#3b82f6" />
+                <circle cx="80" cy="100" r="3" fill="#3b82f6" />
+                <circle cx="120" cy="40" r="3" fill="#3b82f6" />
+                <circle cx="160" cy="60" r="3" fill="#3b82f6" />
+              </svg>
+            </div>
+          </div>
+
+          {/* Text content */}
+          <div className="text-center z-10 relative">
+            <h3 className="text-2xl font-bold text-white mb-4">Get All Your Finances At One Place.</h3>
+            <div className="flex justify-center gap-2">
+              <div className="w-2 h-2 bg-white rounded-full opacity-60"></div>
+              <div className="w-2 h-2 bg-white rounded-full opacity-80"></div>
+              <div className="w-2 h-2 bg-white rounded-full opacity-60"></div>
+            </div>
+          </div>
+
+          {/* Bottom illustration - simple figure */}
+          <div className="absolute bottom-8 right-12 text-6xl">
+            👨‍💼
+          </div>
+        </motion.div>
+
+        {/* Mobile layout */}
+        <motion.div
+          initial={{ opacity: 0, y: 50 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ duration: 0.6 }}
+          className="lg:hidden w-full px-6 py-8"
+        >
+          <div className="bg-white rounded-3xl shadow-2xl p-8">
+            <div className="mb-12">
+              <h1 className="text-4xl font-bold text-gray-900 mb-2">FNCE.</h1>
+              <div className="w-12 h-1 bg-blue-600 rounded-full"></div>
+            </div>
+
             <div className="mb-8">
-              <h2 className="text-3xl font-bold text-white">Create account</h2>
-              <p className="text-slate-400 text-sm mt-2">Start managing your finances smarter</p>
+              <h2 className="text-3xl font-bold text-gray-900 mb-2">Sign Up</h2>
+              <p className="text-gray-500 text-sm">
+                Already have an account?{' '}
+                <Link to="/login" className="text-blue-600 hover:text-blue-700 font-medium">
+                  Log In
+                </Link>
+              </p>
             </div>
 
-            <form onSubmit={handleSubmit} className="space-y-5">
-              {/* Full Name */}
+            <form onSubmit={handleSubmit} className="space-y-6">
               <div>
-                <label className="block text-xs font-semibold text-slate-300 mb-2 uppercase tracking-wider">Full Name</label>
-                <motion.input
-                  whileFocus={{ scale: 1.01 }}
+                <input
                   type="text"
                   value={fullName}
                   onChange={(e) => setFullName(e.target.value)}
-                  className="w-full px-4 py-3 bg-slate-900 border border-slate-700 rounded-lg text-white placeholder-slate-500 focus:outline-none focus:border-blue-500 focus:bg-slate-900/80 transition-all text-sm"
-                  placeholder="Alex Rivera"
+                  className="w-full px-4 py-3 border border-gray-300 rounded-lg text-gray-900 placeholder-gray-400 focus:outline-none focus:border-blue-600 focus:ring-1 focus:ring-blue-600 transition-all"
+                  placeholder="Full Name"
                   required
                 />
               </div>
 
-              {/* Email */}
               <div>
-                <label className="block text-xs font-semibold text-slate-300 mb-2 uppercase tracking-wider">Email</label>
-                <motion.input
-                  whileFocus={{ scale: 1.01 }}
+                <input
                   type="email"
                   value={email}
                   onChange={(e) => setEmail(e.target.value)}
-                  className="w-full px-4 py-3 bg-slate-900 border border-slate-700 rounded-lg text-white placeholder-slate-500 focus:outline-none focus:border-blue-500 focus:bg-slate-900/80 transition-all text-sm"
+                  className="w-full px-4 py-3 border border-gray-300 rounded-lg text-gray-900 placeholder-gray-400 focus:outline-none focus:border-blue-600 focus:ring-1 focus:ring-blue-600 transition-all"
                   placeholder="you@example.com"
                   required
                 />
               </div>
 
-              {/* Password */}
-              <div>
-                <label className="block text-xs font-semibold text-slate-300 mb-2 uppercase tracking-wider">Password</label>
-                <div className="relative">
-                  <motion.input
-                    whileFocus={{ scale: 1.01 }}
-                    type={showPassword ? 'text' : 'password'}
-                    value={password}
-                    onChange={(e) => setPassword(e.target.value)}
-                    className="w-full px-4 py-3 bg-slate-900 border border-slate-700 rounded-lg text-white placeholder-slate-500 focus:outline-none focus:border-blue-500 focus:bg-slate-900/80 transition-all pr-11 text-sm"
-                    placeholder="Create a strong password"
-                    required
-                    minLength={6}
-                  />
-                  <button
-                    type="button"
-                    onClick={() => setShowPassword(!showPassword)}
-                    className="absolute right-3 top-1/2 -translate-y-1/2 text-slate-400 hover:text-slate-200 transition-colors"
-                  >
-                    {showPassword ? <EyeOff size={18} /> : <Eye size={18} />}
-                  </button>
-                </div>
+              <div className="relative">
+                <input
+                  type={showPassword ? "text" : "password"}
+                  value={password}
+                  onChange={(e) => setPassword(e.target.value)}
+                  className="w-full px-4 py-3 border border-gray-300 rounded-lg text-gray-900 placeholder-gray-400 focus:outline-none focus:border-blue-600 focus:ring-1 focus:ring-blue-600 transition-all"
+                  placeholder="Create a strong password"
+                  required
+                  minLength={6}
+                />
+                <button
+                  type="button"
+                  onClick={() => setShowPassword(!showPassword)}
+                  className="absolute right-4 top-1/2 -translate-y-1/2 text-gray-400 hover:text-gray-600"
+                >
+                  {showPassword ? <EyeOff size={20} /> : <Eye size={20} />}
+                </button>
               </div>
 
-              {/* Submit Button */}
               <motion.button
                 whileHover={{ scale: 1.01 }}
                 whileTap={{ scale: 0.98 }}
                 type="submit"
                 disabled={loading}
-                className="w-full py-3 bg-blue-600 hover:bg-blue-700 disabled:bg-slate-600 text-white font-semibold rounded-lg flex items-center justify-center gap-2 text-sm transition-all mt-6"
+                className="w-full py-3 bg-blue-600 hover:bg-blue-700 disabled:bg-gray-400 text-white font-semibold rounded-lg transition-all text-sm"
               >
                 {loading ? (
-                  <div className="w-4 h-4 border-2 border-white border-t-transparent rounded-full animate-spin" />
+                  <div className="w-4 h-4 border-2 border-white border-t-transparent rounded-full animate-spin mx-auto" />
                 ) : (
-                  <>
-                    Create Account
-                    <ArrowRight size={18} />
-                  </>
+                  'Create Account'
                 )}
               </motion.button>
             </form>
 
-            {/* Footer */}
-            <div className="mt-6 text-center text-xs">
-              <p className="text-slate-400">
+            <div className="mt-8 pt-8 border-t border-gray-200 text-center">
+              <p className="text-gray-600 text-sm">
                 Already have an account?{' '}
-                <Link 
-                  to="/login" 
-                  className="text-blue-400 hover:text-blue-300 font-medium transition-colors"
-                >
-                  Sign in
+                <Link to="/login" className="text-blue-600 hover:text-blue-700 font-medium">
+                  Log In
                 </Link>
               </p>
             </div>
-          </motion.div>
-        </div>
+          </div>
+        </motion.div>
       </div>
     </div>
   )

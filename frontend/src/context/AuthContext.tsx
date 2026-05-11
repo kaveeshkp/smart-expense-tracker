@@ -3,8 +3,14 @@ import { useNavigate } from 'react-router-dom'
 import API from '../api/api'
 import toast from 'react-hot-toast'
 
+interface User {
+  fullName: string
+  userId: number
+  email: string
+}
+
 interface AuthContextType {
-  user: any
+  user: User | null
   token: string | null
   login: (email: string, password: string) => Promise<void>
   register: (fullName: string, email: string, password: string) => Promise<void>
@@ -15,9 +21,26 @@ interface AuthContextType {
 const AuthContext = createContext<AuthContextType | undefined>(undefined)
 
 export const AuthProvider = ({ children }: { children: ReactNode }) => {
-  const [user, setUser] = useState<any>(null)
+  const [user, setUser] = useState<User | null>(null)
   const [token, setToken] = useState<string | null>(localStorage.getItem('token'))
+  const [isInitialized, setIsInitialized] = useState(false)
   const navigate = useNavigate()
+
+  useEffect(() => {
+    const savedUser = localStorage.getItem('user')
+    const savedToken = localStorage.getItem('token')
+
+    if (savedUser && savedToken) {
+      try {
+        setUser(JSON.parse(savedUser))
+        setToken(savedToken)
+      } catch (error) {
+        localStorage.removeItem('user')
+        localStorage.removeItem('token')
+      }
+    }
+    setIsInitialized(true)
+  }, [])
 
   const login = async (email: string, password: string) => {
     try {
@@ -32,8 +55,11 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
 
       toast.success('Login successful!')
       navigate('/')
-    } catch (error: any) {
-      toast.error(error.response?.data?.message || 'Login failed')
+    } catch (error: unknown) {
+      const errorMessage = error instanceof Error
+        ? error.message
+        : 'Login failed'
+      toast.error(errorMessage)
       throw error
     }
   }
@@ -51,8 +77,11 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
 
       toast.success('Account created successfully!')
       navigate('/')
-    } catch (error: any) {
-      toast.error(error.response?.data?.message || 'Registration failed')
+    } catch (error: unknown) {
+      const errorMessage = error instanceof Error
+        ? error.message
+        : 'Registration failed'
+      toast.error(errorMessage)
       throw error
     }
   }
@@ -66,12 +95,9 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
     toast.success('Logged out successfully')
   }
 
-  useEffect(() => {
-    const savedUser = localStorage.getItem('user')
-    if (savedUser && token) {
-      setUser(JSON.parse(savedUser))
-    }
-  }, [token])
+  if (!isInitialized) {
+    return null
+  }
 
   return (
     <AuthContext.Provider value={{

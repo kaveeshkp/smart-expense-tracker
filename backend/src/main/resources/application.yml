@@ -2,21 +2,34 @@ spring:
   application:
     name: smart-expense-tracker
   datasource:
-    url: jdbc:mysql://localhost:3306/expense_tracker?createDatabaseIfNotExist=true&useSSL=false&serverTimezone=UTC
-    username: root
-    password: 
+    url: ${DB_URL:jdbc:mysql://localhost:3306/expense_tracker?createDatabaseIfNotExist=true&useSSL=false&serverTimezone=UTC&allowPublicKeyRetrieval=true}
+    username: ${DB_USER:root}
+    password: ${DB_PASSWORD:root_password_change_me}
     driver-class-name: com.mysql.cj.jdbc.Driver
   jpa:
     hibernate:
-      ddl-auto: update
-    show-sql: true
+      ddl-auto: validate
+    show-sql: false
     properties:
       hibernate:
         format_sql: true
+        dialect: org.hibernate.dialect.MySQLDialect
 
 jwt:
-  secret: super_secret_key_change_in_production_2026_smart_expense_tracker_123456789
-  expiration: 86400000
+  secret: ${JWT_SECRET:change_me_in_production_use_strong_random_key_256bit_minimum}
+  expiration: ${JWT_EXPIRATION:86400000}
 
 server:
   port: 8080
+  servlet:
+    context-path: /api
+  tomcat:
+    max-http-post-size: 1MB
+    max-http-header-size: 8KB
+
+logging:
+  level:
+    root: INFO
+    com.smart.expense_tracker: DEBUG
+  pattern:
+    console: "%d{HH:mm:ss.SSS} [%thread] %-5level %logger{36} - %msg%n"
