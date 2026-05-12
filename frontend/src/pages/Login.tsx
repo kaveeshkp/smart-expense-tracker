@@ -1,5 +1,5 @@
 import { useState } from 'react'
-import { useNavigate, Link } from 'react-router-dom'
+import { Link } from 'react-router-dom'
 import { useAuth } from '../context/AuthContext'
 import { Eye, EyeOff, Mail, Lock } from 'lucide-react'
 import toast from 'react-hot-toast'
@@ -10,7 +10,6 @@ const Login = () => {
   const [showPassword, setShowPassword] = useState(false)
   const [loading, setLoading] = useState(false)
   const { login } = useAuth()
-  const navigate = useNavigate()
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault()
@@ -31,45 +30,75 @@ const Login = () => {
       display: 'flex',
       alignItems: 'center',
       justifyContent: 'center',
-      background: 'linear-gradient(135deg, #667eea 0%, #764ba2 100%)',
+      background: 'linear-gradient(135deg, #1e1b4b 0%, #312e81 50%, #1e1b4b 100%)',
       padding: '20px',
       fontFamily: 'Inter, -apple-system, BlinkMacSystemFont, Segoe UI, sans-serif',
+      position: 'relative' as const,
+      overflow: 'hidden' as const,
+    },
+    blob1: {
+      position: 'absolute' as const,
+      top: '10%',
+      left: '10%',
+      width: '380px',
+      height: '380px',
+      background: 'radial-gradient(circle, rgba(99,102,241,0.2) 0%, transparent 70%)',
+      borderRadius: '50%',
+      filter: 'blur(80px)',
+      pointerEvents: 'none' as const,
+    },
+    blob2: {
+      position: 'absolute' as const,
+      bottom: '10%',
+      right: '10%',
+      width: '460px',
+      height: '460px',
+      background: 'radial-gradient(circle, rgba(168,85,247,0.2) 0%, transparent 70%)',
+      borderRadius: '50%',
+      filter: 'blur(90px)',
+      pointerEvents: 'none' as const,
     },
     card: {
+      position: 'relative' as const,
       width: '100%',
-      maxWidth: '420px',
-      background: 'white',
-      borderRadius: '16px',
-      boxShadow: '0 20px 60px rgba(0, 0, 0, 0.3)',
-      padding: '40px',
+      maxWidth: '450px',
+      background: 'rgba(30, 27, 75, 0.5)',
+      backdropFilter: 'blur(30px)',
+      border: '1px solid rgba(255, 255, 255, 0.1)',
+      borderRadius: '24px',
+      boxShadow: '0 25px 50px rgba(0, 0, 0, 0.5)',
+      padding: '48px 40px',
+      color: '#fff',
+      zIndex: 10,
     },
     header: {
-      marginBottom: '30px',
+      marginBottom: '40px',
     },
     logo: {
-      fontSize: '32px',
-      marginBottom: '15px',
+      fontSize: '40px',
+      marginBottom: '20px',
     },
     title: {
-      fontSize: '28px',
+      fontSize: '32px',
       fontWeight: '700',
-      color: '#1f2937',
-      margin: '0 0 8px 0',
+      color: '#fff',
+      margin: '0 0 10px 0',
+      letterSpacing: '-0.5px',
     },
     subtitle: {
-      fontSize: '14px',
-      color: '#6b7280',
+      fontSize: '15px',
+      color: '#cbd5e1',
       margin: '0',
     },
     formGroup: {
-      marginBottom: '20px',
+      marginBottom: '24px',
     },
     label: {
       display: 'block',
       fontSize: '14px',
       fontWeight: '600',
-      color: '#374151',
-      marginBottom: '8px',
+      color: '#cbd5e1',
+      marginBottom: '10px',
     },
     inputWrapper: {
       position: 'relative' as const,
@@ -78,34 +107,47 @@ const Login = () => {
     },
     icon: {
       position: 'absolute' as const,
-      left: '12px',
-      color: '#9ca3af',
+      left: '16px',
+      color: '#94a3b8',
+      display: 'flex',
+      alignItems: 'center',
+      justifyContent: 'center',
+      zIndex: 2,
     },
     input: {
       width: '100%',
-      padding: '12px 12px 12px 40px',
-      fontSize: '14px',
-      border: '1.5px solid #e5e7eb',
-      borderRadius: '8px',
+      padding: '14px 14px 14px 48px',
+      fontSize: '15px',
+      border: '1px solid rgba(255, 255, 255, 0.15)',
+      borderRadius: '14px',
       outline: 'none',
-      transition: 'all 0.2s',
+      transition: 'all 0.3s ease',
       boxSizing: 'border-box' as const,
       fontFamily: 'inherit',
+      background: 'rgba(255, 255, 255, 0.07)',
+      color: '#fff',
     },
     inputFocus: {
-      borderColor: '#667eea',
-      boxShadow: '0 0 0 3px rgba(102, 126, 234, 0.1)',
+      borderColor: 'rgba(99, 102, 241, 0.5)',
+      background: 'rgba(99, 102, 241, 0.1)',
+      boxShadow: '0 0 0 3px rgba(99, 102, 241, 0.15)',
     },
     toggleBtn: {
       position: 'absolute' as const,
-      right: '12px',
+      right: '16px',
       background: 'none',
       border: 'none',
       cursor: 'pointer',
-      color: '#9ca3af',
-      padding: '4px',
+      color: '#94a3b8',
+      padding: '6px',
       display: 'flex',
       alignItems: 'center',
+      justifyContent: 'center',
+      zIndex: 3,
+      transition: 'color 0.2s ease',
+    },
+    toggleBtnHover: {
+      color: '#e2e8f0',
     },
     checkboxWrapper: {
       display: 'flex',
@@ -113,89 +155,111 @@ const Login = () => {
       justifyContent: 'space-between',
       marginTop: '16px',
       marginBottom: '24px',
+      fontSize: '14px',
     },
     checkbox: {
       display: 'flex',
       alignItems: 'center',
       gap: '8px',
-      fontSize: '14px',
-      color: '#6b7280',
+      color: '#cbd5e1',
     },
     forgotLink: {
-      color: '#667eea',
+      color: '#6366f1',
       textDecoration: 'none',
-      fontSize: '14px',
       fontWeight: '600',
       cursor: 'pointer',
-      transition: 'color 0.2s',
+      transition: 'color 0.2s ease',
+    },
+    forgotLinkHover: {
+      color: '#a78bfa',
     },
     submitBtn: {
       width: '100%',
-      padding: '12px',
-      background: 'linear-gradient(135deg, #667eea 0%, #764ba2 100%)',
+      padding: '14px',
+      background: 'linear-gradient(135deg, #6366f1 0%, #a855f7 100%)',
       color: 'white',
       border: 'none',
-      borderRadius: '8px',
+      borderRadius: '14px',
       fontSize: '16px',
       fontWeight: '700',
       cursor: 'pointer',
-      transition: 'transform 0.2s, opacity 0.2s',
+      transition: 'all 0.3s ease',
       display: 'flex',
       alignItems: 'center',
       justifyContent: 'center',
-      gap: '8px',
+      gap: '10px',
+      marginTop: '12px',
+      boxShadow: '0 10px 25px rgba(99, 102, 241, 0.3)',
     },
     submitBtnDisabled: {
-      opacity: 0.7,
+      opacity: 0.6,
       cursor: 'not-allowed',
     },
+    submitBtnHover: {
+      transform: 'translateY(-2px)',
+      boxShadow: '0 15px 35px rgba(99, 102, 241, 0.4)',
+    },
     divider: {
-      margin: '24px 0',
+      margin: '32px 0',
       display: 'flex',
       alignItems: 'center',
-      gap: '12px',
-      color: '#d1d5db',
-      fontSize: '14px',
+      gap: '16px',
+      color: '#64748b',
+      fontSize: '13px',
+      textTransform: 'uppercase' as const,
+      letterSpacing: '1px',
     },
     dividerLine: {
       flex: 1,
       height: '1px',
-      background: '#e5e7eb',
+      background: 'rgba(255, 255, 255, 0.1)',
     },
     socialButtons: {
       display: 'grid',
       gridTemplateColumns: 'repeat(3, 1fr)',
-      gap: '10px',
-      marginBottom: '20px',
+      gap: '12px',
+      marginBottom: '28px',
     },
     socialBtn: {
-      padding: '10px',
-      border: '1.5px solid #e5e7eb',
-      borderRadius: '8px',
-      background: 'white',
+      padding: '12px',
+      border: '1px solid rgba(255, 255, 255, 0.15)',
+      borderRadius: '14px',
+      background: 'rgba(255, 255, 255, 0.07)',
       cursor: 'pointer',
-      fontSize: '13px',
+      fontSize: '14px',
       fontWeight: '600',
-      color: '#374151',
-      transition: 'all 0.2s',
+      color: '#e2e8f0',
+      transition: 'all 0.3s ease',
+      display: 'flex',
+      alignItems: 'center',
+      justifyContent: 'center',
+      gap: '6px',
+    },
+    socialBtnHover: {
+      background: 'rgba(99, 102, 241, 0.2)',
+      borderColor: 'rgba(99, 102, 241, 0.5)',
     },
     signupText: {
       textAlign: 'center' as const,
       fontSize: '14px',
-      color: '#6b7280',
-      marginTop: '20px',
+      color: '#cbd5e1',
+      marginTop: '24px',
     },
     signupLink: {
-      color: '#667eea',
+      color: '#6366f1',
       textDecoration: 'none',
       fontWeight: '700',
       cursor: 'pointer',
+      transition: 'color 0.2s ease',
+    },
+    signupLinkHover: {
+      color: '#a78bfa',
     },
     footerText: {
       textAlign: 'center' as const,
       fontSize: '11px',
-      color: '#9ca3af',
-      marginTop: '16px',
+      color: '#64748b',
+      marginTop: '20px',
       letterSpacing: '1px',
     },
   }
@@ -205,11 +269,16 @@ const Login = () => {
   }
 
   const handleInputBlur = (e: React.FocusEvent<HTMLInputElement>) => {
+    e.target.style.borderColor = 'rgba(255, 255, 255, 0.15)'
+    e.target.style.background = 'rgba(255, 255, 255, 0.07)'
     e.target.style.boxShadow = 'none'
   }
 
   return (
     <div style={styles.container}>
+      <div style={styles.blob1} />
+      <div style={styles.blob2} />
+
       <div style={styles.card}>
         <div style={styles.header}>
           <div style={styles.logo}>💰</div>
@@ -221,12 +290,14 @@ const Login = () => {
           <div style={styles.formGroup}>
             <label style={styles.label}>Email address</label>
             <div style={styles.inputWrapper}>
-              <Mail size={18} style={styles.icon} />
+              <div style={styles.icon}>
+                <Mail size={18} />
+              </div>
               <input
                 type="email"
                 value={email}
                 onChange={(e) => setEmail(e.target.value)}
-                placeholder="you@company.com"
+                placeholder="you@example.com"
                 required
                 style={styles.input}
                 onFocus={handleInputFocus}
@@ -238,14 +309,16 @@ const Login = () => {
           <div style={styles.formGroup}>
             <label style={styles.label}>Password</label>
             <div style={styles.inputWrapper}>
-              <Lock size={18} style={styles.icon} />
+              <div style={styles.icon}>
+                <Lock size={18} />
+              </div>
               <input
                 type={showPassword ? 'text' : 'password'}
                 value={password}
                 onChange={(e) => setPassword(e.target.value)}
                 placeholder="••••••••"
                 required
-                style={{ ...styles.input, paddingRight: '40px' }}
+                style={{ ...styles.input, paddingRight: '48px' }}
                 onFocus={handleInputFocus}
                 onBlur={handleInputBlur}
               />
@@ -253,6 +326,8 @@ const Login = () => {
                 type="button"
                 onClick={() => setShowPassword(!showPassword)}
                 style={styles.toggleBtn}
+                onMouseEnter={(e) => Object.assign(e.currentTarget.style, styles.toggleBtnHover)}
+                onMouseLeave={(e) => Object.assign(e.currentTarget.style, { color: '#94a3b8' })}
                 aria-label="Toggle password visibility"
               >
                 {showPassword ? <EyeOff size={18} /> : <Eye size={18} />}
@@ -262,10 +337,23 @@ const Login = () => {
 
           <div style={styles.checkboxWrapper}>
             <label style={styles.checkbox}>
-              <input type="checkbox" />
+              <input
+                type="checkbox"
+                style={{
+                  width: '16px',
+                  height: '16px',
+                  cursor: 'pointer',
+                  accentColor: '#6366f1',
+                }}
+              />
               Remember me
             </label>
-            <a href="#" style={styles.forgotLink}>
+            <a
+              href="#"
+              style={styles.forgotLink}
+              onMouseEnter={(e) => Object.assign(e.currentTarget.style, styles.forgotLinkHover)}
+              onMouseLeave={(e) => Object.assign(e.currentTarget.style, { color: '#6366f1' })}
+            >
               Forgot password?
             </a>
           </div>
@@ -277,6 +365,8 @@ const Login = () => {
               ...styles.submitBtn,
               ...(loading ? styles.submitBtnDisabled : {}),
             }}
+            onMouseEnter={(e) => !loading && Object.assign(e.currentTarget.style, styles.submitBtnHover)}
+            onMouseLeave={(e) => Object.assign(e.currentTarget.style, { transform: 'translateY(0)', boxShadow: '0 10px 25px rgba(99, 102, 241, 0.3)' })}
           >
             {loading ? (
               <>
@@ -284,10 +374,10 @@ const Login = () => {
                   style={{
                     width: '18px',
                     height: '18px',
-                    border: '2px solid rgba(255,255,255,0.3)',
-                    borderTop: '2px solid white',
+                    border: '2px solid rgba(255, 255, 255, 0.3)',
+                    borderTop: '2px solid #fff',
                     borderRadius: '50%',
-                    animation: 'spin 0.6s linear infinite',
+                    animation: 'spin 0.8s linear infinite',
                   }}
                 />
                 Signing in...
@@ -300,24 +390,50 @@ const Login = () => {
 
         <div style={styles.divider}>
           <div style={styles.dividerLine} />
-          <span>or</span>
+          <span>or continue with</span>
           <div style={styles.dividerLine} />
         </div>
 
         <div style={styles.socialButtons}>
-          <button style={styles.socialBtn}>Google</button>
-          <button style={styles.socialBtn}>GitHub</button>
-          <button style={styles.socialBtn}>SSO</button>
+          <button
+            type="button"
+            style={styles.socialBtn}
+            onMouseEnter={(e) => Object.assign(e.currentTarget.style, styles.socialBtnHover)}
+            onMouseLeave={(e) => Object.assign(e.currentTarget.style, { background: 'rgba(255, 255, 255, 0.07)', borderColor: 'rgba(255, 255, 255, 0.15)' })}
+          >
+            Google
+          </button>
+          <button
+            type="button"
+            style={styles.socialBtn}
+            onMouseEnter={(e) => Object.assign(e.currentTarget.style, styles.socialBtnHover)}
+            onMouseLeave={(e) => Object.assign(e.currentTarget.style, { background: 'rgba(255, 255, 255, 0.07)', borderColor: 'rgba(255, 255, 255, 0.15)' })}
+          >
+            GitHub
+          </button>
+          <button
+            type="button"
+            style={styles.socialBtn}
+            onMouseEnter={(e) => Object.assign(e.currentTarget.style, styles.socialBtnHover)}
+            onMouseLeave={(e) => Object.assign(e.currentTarget.style, { background: 'rgba(255, 255, 255, 0.07)', borderColor: 'rgba(255, 255, 255, 0.15)' })}
+          >
+            SSO
+          </button>
         </div>
 
         <div style={styles.signupText}>
           Don't have an account?{' '}
-          <Link to="/register" style={styles.signupLink}>
+          <Link
+            to="/register"
+            style={styles.signupLink}
+            onMouseEnter={(e) => Object.assign(e.currentTarget.style, styles.signupLinkHover)}
+            onMouseLeave={(e) => Object.assign(e.currentTarget.style, { color: '#6366f1' })}
+          >
             Get started free
           </Link>
         </div>
 
-        <p style={styles.footerText}>🔒 SECURE • SOC 2 • GDPR</p>
+        <p style={styles.footerText}>🔒 SECURE • SOC 2 • GDPR • 256-BIT ENCRYPTION</p>
       </div>
 
       <style>{`
@@ -325,21 +441,8 @@ const Login = () => {
           from { transform: rotate(0deg); }
           to { transform: rotate(360deg); }
         }
-        input[type="checkbox"] {
-          width: 16px;
-          height: 16px;
-          cursor: pointer;
-          accent-color: #667eea;
-        }
-        a {
-          transition: color 0.2s;
-        }
-        a:hover {
-          opacity: 0.8;
-        }
-        button:hover:not(:disabled) {
-          transform: translateY(-2px);
-          box-shadow: 0 8px 24px rgba(0, 0, 0, 0.15);
+        input::placeholder {
+          color: rgba(203, 213, 225, 0.5);
         }
       `}</style>
     </div>
