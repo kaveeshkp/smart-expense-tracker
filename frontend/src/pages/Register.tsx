@@ -1,8 +1,8 @@
 import { useState } from 'react'
 import { Link } from 'react-router-dom'
 import { useAuth } from '../context/AuthContext'
-import { Eye, EyeOff } from 'lucide-react'
-import { motion } from 'framer-motion'
+import { Eye, EyeOff, Mail, Lock, User } from 'lucide-react'
+import toast from 'react-hot-toast'
 
 const Register = () => {
   const [fullName, setFullName] = useState('')
@@ -17,248 +17,318 @@ const Register = () => {
     setLoading(true)
     try {
       await register(fullName, email, password)
-    } catch {
-      // Error handled in context
+    } catch (error: unknown) {
+      const errorMessage = error instanceof Error ? error.message : 'Registration failed'
+      toast.error(errorMessage)
     } finally {
       setLoading(false)
     }
   }
 
+  const styles = {
+    container: {
+      minHeight: '100vh',
+      display: 'flex',
+      alignItems: 'center',
+      justifyContent: 'center',
+      background: 'linear-gradient(135deg, #667eea 0%, #764ba2 100%)',
+      padding: '20px',
+      fontFamily: 'Inter, -apple-system, BlinkMacSystemFont, Segoe UI, sans-serif',
+    },
+    card: {
+      width: '100%',
+      maxWidth: '420px',
+      background: 'white',
+      borderRadius: '16px',
+      boxShadow: '0 20px 60px rgba(0, 0, 0, 0.3)',
+      padding: '40px',
+    },
+    header: {
+      marginBottom: '30px',
+    },
+    logo: {
+      fontSize: '32px',
+      marginBottom: '15px',
+    },
+    title: {
+      fontSize: '28px',
+      fontWeight: '700',
+      color: '#1f2937',
+      margin: '0 0 8px 0',
+    },
+    subtitle: {
+      fontSize: '14px',
+      color: '#6b7280',
+      margin: '0',
+    },
+    formGroup: {
+      marginBottom: '20px',
+    },
+    label: {
+      display: 'block',
+      fontSize: '14px',
+      fontWeight: '600',
+      color: '#374151',
+      marginBottom: '8px',
+    },
+    inputWrapper: {
+      position: 'relative' as const,
+      display: 'flex',
+      alignItems: 'center',
+    },
+    icon: {
+      position: 'absolute' as const,
+      left: '12px',
+      color: '#9ca3af',
+    },
+    input: {
+      width: '100%',
+      padding: '12px 12px 12px 40px',
+      fontSize: '14px',
+      border: '1.5px solid #e5e7eb',
+      borderRadius: '8px',
+      outline: 'none',
+      transition: 'all 0.2s',
+      boxSizing: 'border-box' as const,
+      fontFamily: 'inherit',
+    },
+    inputFocus: {
+      borderColor: '#667eea',
+      boxShadow: '0 0 0 3px rgba(102, 126, 234, 0.1)',
+    },
+    toggleBtn: {
+      position: 'absolute' as const,
+      right: '12px',
+      background: 'none',
+      border: 'none',
+      cursor: 'pointer',
+      color: '#9ca3af',
+      padding: '4px',
+      display: 'flex',
+      alignItems: 'center',
+    },
+    submitBtn: {
+      width: '100%',
+      padding: '12px',
+      background: 'linear-gradient(135deg, #667eea 0%, #764ba2 100%)',
+      color: 'white',
+      border: 'none',
+      borderRadius: '8px',
+      fontSize: '16px',
+      fontWeight: '700',
+      cursor: 'pointer',
+      transition: 'transform 0.2s, opacity 0.2s',
+      display: 'flex',
+      alignItems: 'center',
+      justifyContent: 'center',
+      gap: '8px',
+      marginBottom: '20px',
+    },
+    submitBtnDisabled: {
+      opacity: 0.7,
+      cursor: 'not-allowed',
+    },
+    divider: {
+      margin: '20px 0',
+      display: 'flex',
+      alignItems: 'center',
+      gap: '12px',
+      color: '#d1d5db',
+      fontSize: '14px',
+    },
+    dividerLine: {
+      flex: 1,
+      height: '1px',
+      background: '#e5e7eb',
+    },
+    socialButtons: {
+      display: 'grid',
+      gridTemplateColumns: 'repeat(3, 1fr)',
+      gap: '10px',
+      marginBottom: '20px',
+    },
+    socialBtn: {
+      padding: '10px',
+      border: '1.5px solid #e5e7eb',
+      borderRadius: '8px',
+      background: 'white',
+      cursor: 'pointer',
+      fontSize: '13px',
+      fontWeight: '600',
+      color: '#374151',
+      transition: 'all 0.2s',
+    },
+    signinText: {
+      textAlign: 'center' as const,
+      fontSize: '14px',
+      color: '#6b7280',
+      marginTop: '20px',
+    },
+    signinLink: {
+      color: '#667eea',
+      textDecoration: 'none',
+      fontWeight: '700',
+      cursor: 'pointer',
+    },
+    footerText: {
+      textAlign: 'center' as const,
+      fontSize: '11px',
+      color: '#9ca3af',
+      marginTop: '16px',
+      letterSpacing: '1px',
+    },
+  }
+
+  const handleInputFocus = (e: React.FocusEvent<HTMLInputElement>) => {
+    Object.assign(e.target.style, styles.inputFocus)
+  }
+
+  const handleInputBlur = (e: React.FocusEvent<HTMLInputElement>) => {
+    e.target.style.boxShadow = 'none'
+  }
+
   return (
-    <div className="min-h-screen bg-gradient-to-br from-purple-600 via-blue-500 to-purple-600 flex items-center justify-center relative overflow-hidden">
-      {/* Background decorative elements */}
-      <div className="absolute top-0 right-0 w-96 h-96 bg-white rounded-full blur-3xl opacity-10 -mr-32 -mt-32"></div>
-      <div className="absolute bottom-0 left-0 w-96 h-96 bg-white rounded-full blur-3xl opacity-10 -ml-32 -mb-32"></div>
+    <div style={styles.container}>
+      <div style={styles.card}>
+        <div style={styles.header}>
+          <div style={styles.logo}>💰</div>
+          <h1 style={styles.title}>SmartExpenses</h1>
+          <p style={styles.subtitle}>Create your account</p>
+        </div>
 
-      <div className="flex w-full max-w-7xl mx-auto relative z-10">
-        {/* LEFT SIDE - White Form Panel */}
-        <motion.div
-          initial={{ opacity: 0, x: -50 }}
-          animate={{ opacity: 1, x: 0 }}
-          transition={{ duration: 0.6 }}
-          className="hidden lg:flex lg:w-5/12 bg-white rounded-3xl shadow-2xl p-12 flex-col justify-center relative"
-        >
-          <div className="mb-12">
-            <h1 className="text-4xl font-bold text-gray-900 mb-2">FNCE.</h1>
-            <div className="w-12 h-1 bg-blue-600 rounded-full"></div>
-          </div>
-
-          <div className="mb-8">
-            <h2 className="text-3xl font-bold text-gray-900 mb-2">Sign Up</h2>
-            <p className="text-gray-500 text-sm">
-              Already have an account?{' '}
-              <Link to="/login" className="text-blue-600 hover:text-blue-700 font-medium">
-                Log In
-              </Link>
-            </p>
-          </div>
-
-          <form onSubmit={handleSubmit} className="space-y-6">
-            <div>
+        <form onSubmit={handleSubmit}>
+          <div style={styles.formGroup}>
+            <label style={styles.label}>Full name</label>
+            <div style={styles.inputWrapper}>
+              <User size={18} style={styles.icon} />
               <input
                 type="text"
                 value={fullName}
                 onChange={(e) => setFullName(e.target.value)}
-                className="w-full px-4 py-3 border border-gray-300 rounded-lg text-gray-900 placeholder-gray-400 focus:outline-none focus:border-blue-600 focus:ring-1 focus:ring-blue-600 transition-all"
-                placeholder="Full Name"
+                placeholder="Alex Rivera"
                 required
+                style={styles.input}
+                onFocus={handleInputFocus}
+                onBlur={handleInputBlur}
               />
             </div>
+          </div>
 
-            <div>
+          <div style={styles.formGroup}>
+            <label style={styles.label}>Email address</label>
+            <div style={styles.inputWrapper}>
+              <Mail size={18} style={styles.icon} />
               <input
                 type="email"
                 value={email}
                 onChange={(e) => setEmail(e.target.value)}
-                className="w-full px-4 py-3 border border-gray-300 rounded-lg text-gray-900 placeholder-gray-400 focus:outline-none focus:border-blue-600 focus:ring-1 focus:ring-blue-600 transition-all"
-                placeholder="you@example.com"
+                placeholder="you@company.com"
                 required
+                style={styles.input}
+                onFocus={handleInputFocus}
+                onBlur={handleInputBlur}
               />
             </div>
+          </div>
 
-            <div className="relative">
+          <div style={styles.formGroup}>
+            <label style={styles.label}>Create password</label>
+            <div style={styles.inputWrapper}>
+              <Lock size={18} style={styles.icon} />
               <input
-                type={showPassword ? "text" : "password"}
+                type={showPassword ? 'text' : 'password'}
                 value={password}
                 onChange={(e) => setPassword(e.target.value)}
-                className="w-full px-4 py-3 border border-gray-300 rounded-lg text-gray-900 placeholder-gray-400 focus:outline-none focus:border-blue-600 focus:ring-1 focus:ring-blue-600 transition-all"
-                placeholder="Create a strong password"
+                placeholder="••••••••"
                 required
                 minLength={6}
+                style={{ ...styles.input, paddingRight: '40px' }}
+                onFocus={handleInputFocus}
+                onBlur={handleInputBlur}
               />
               <button
                 type="button"
                 onClick={() => setShowPassword(!showPassword)}
-                className="absolute right-4 top-1/2 -translate-y-1/2 text-gray-400 hover:text-gray-600"
+                style={styles.toggleBtn}
+                aria-label="Toggle password visibility"
               >
-                {showPassword ? <EyeOff size={20} /> : <Eye size={20} />}
-              </button>
-            </div>
-
-            <motion.button
-              whileHover={{ scale: 1.01 }}
-              whileTap={{ scale: 0.98 }}
-              type="submit"
-              disabled={loading}
-              className="w-full py-3 bg-blue-600 hover:bg-blue-700 disabled:bg-gray-400 text-white font-semibold rounded-lg transition-all text-sm"
-            >
-              {loading ? (
-                <div className="w-4 h-4 border-2 border-white border-t-transparent rounded-full animate-spin mx-auto" />
-              ) : (
-                'Create Account'
-              )}
-            </motion.button>
-          </form>
-
-          <div className="mt-8 pt-8 border-t border-gray-200">
-            <p className="text-center text-gray-600 text-sm mb-4">or</p>
-            <div className="flex gap-3">
-              <button className="flex-1 py-2 border border-gray-300 rounded-lg text-gray-700 hover:bg-gray-50 transition-all text-sm font-medium">
-                <span className="flex items-center justify-center gap-2">
-                  <span>🔍</span>
-                  Sign Up
-                </span>
-              </button>
-              <button className="flex-1 py-2 border border-gray-300 rounded-lg text-gray-700 hover:bg-gray-50 transition-all text-sm font-medium">
-                <span>Sign Up</span>
+                {showPassword ? <EyeOff size={18} /> : <Eye size={18} />}
               </button>
             </div>
           </div>
-        </motion.div>
 
-        {/* RIGHT SIDE - Illustration Area */}
-        <motion.div
-          initial={{ opacity: 0, x: 50 }}
-          animate={{ opacity: 1, x: 0 }}
-          transition={{ duration: 0.6, delay: 0.2 }}
-          className="hidden lg:flex lg:w-7/12 bg-gradient-to-br from-blue-400 to-blue-600 rounded-3xl p-12 flex-col justify-center items-center relative overflow-hidden ml-8"
-        >
-          {/* Decorative circles */}
-          <div className="absolute top-10 right-12 w-20 h-20 bg-white rounded-full opacity-40"></div>
-          <div className="absolute top-24 right-20 w-28 h-28 bg-white rounded-full opacity-30"></div>
-          <div className="absolute top-8 right-40 w-16 h-16 bg-white rounded-full opacity-35"></div>
-
-          {/* Illustration box */}
-          <div className="mb-8 relative z-10">
-            <div className="bg-gray-800 rounded-2xl p-8 shadow-2xl w-80 h-48 flex items-center justify-center">
-              <svg className="w-full h-full" viewBox="0 0 200 150" fill="none">
-                {/* Chart visualization */}
-                <path d="M 20 120 Q 40 80, 60 90 Q 80 100, 100 70 Q 120 40, 140 50 Q 160 60, 180 30" stroke="#3b82f6" strokeWidth="2" />
-                <circle cx="40" cy="80" r="3" fill="#3b82f6" />
-                <circle cx="80" cy="100" r="3" fill="#3b82f6" />
-                <circle cx="120" cy="40" r="3" fill="#3b82f6" />
-                <circle cx="160" cy="60" r="3" fill="#3b82f6" />
-              </svg>
-            </div>
-          </div>
-
-          {/* Text content */}
-          <div className="text-center z-10 relative">
-            <h3 className="text-2xl font-bold text-white mb-4">Get All Your Finances At One Place.</h3>
-            <div className="flex justify-center gap-2">
-              <div className="w-2 h-2 bg-white rounded-full opacity-60"></div>
-              <div className="w-2 h-2 bg-white rounded-full opacity-80"></div>
-              <div className="w-2 h-2 bg-white rounded-full opacity-60"></div>
-            </div>
-          </div>
-
-          {/* Bottom illustration - simple figure */}
-          <div className="absolute bottom-8 right-12 text-6xl">
-            👨‍💼
-          </div>
-        </motion.div>
-
-        {/* Mobile layout */}
-        <motion.div
-          initial={{ opacity: 0, y: 50 }}
-          animate={{ opacity: 1, y: 0 }}
-          transition={{ duration: 0.6 }}
-          className="lg:hidden w-full px-6 py-8"
-        >
-          <div className="bg-white rounded-3xl shadow-2xl p-8">
-            <div className="mb-12">
-              <h1 className="text-4xl font-bold text-gray-900 mb-2">FNCE.</h1>
-              <div className="w-12 h-1 bg-blue-600 rounded-full"></div>
-            </div>
-
-            <div className="mb-8">
-              <h2 className="text-3xl font-bold text-gray-900 mb-2">Sign Up</h2>
-              <p className="text-gray-500 text-sm">
-                Already have an account?{' '}
-                <Link to="/login" className="text-blue-600 hover:text-blue-700 font-medium">
-                  Log In
-                </Link>
-              </p>
-            </div>
-
-            <form onSubmit={handleSubmit} className="space-y-6">
-              <div>
-                <input
-                  type="text"
-                  value={fullName}
-                  onChange={(e) => setFullName(e.target.value)}
-                  className="w-full px-4 py-3 border border-gray-300 rounded-lg text-gray-900 placeholder-gray-400 focus:outline-none focus:border-blue-600 focus:ring-1 focus:ring-blue-600 transition-all"
-                  placeholder="Full Name"
-                  required
+          <button
+            type="submit"
+            disabled={loading}
+            style={{
+              ...styles.submitBtn,
+              ...(loading ? styles.submitBtnDisabled : {}),
+            }}
+          >
+            {loading ? (
+              <>
+                <div
+                  style={{
+                    width: '18px',
+                    height: '18px',
+                    border: '2px solid rgba(102, 126, 234, 0.3)',
+                    borderTop: '2px solid #667eea',
+                    borderRadius: '50%',
+                    animation: 'spin 0.6s linear infinite',
+                  }}
                 />
-              </div>
+                Creating account...
+              </>
+            ) : (
+              'Create free account'
+            )}
+          </button>
+        </form>
 
-              <div>
-                <input
-                  type="email"
-                  value={email}
-                  onChange={(e) => setEmail(e.target.value)}
-                  className="w-full px-4 py-3 border border-gray-300 rounded-lg text-gray-900 placeholder-gray-400 focus:outline-none focus:border-blue-600 focus:ring-1 focus:ring-blue-600 transition-all"
-                  placeholder="you@example.com"
-                  required
-                />
-              </div>
+        <div style={styles.divider}>
+          <div style={styles.dividerLine} />
+          <span>or sign up with</span>
+          <div style={styles.dividerLine} />
+        </div>
 
-              <div className="relative">
-                <input
-                  type={showPassword ? "text" : "password"}
-                  value={password}
-                  onChange={(e) => setPassword(e.target.value)}
-                  className="w-full px-4 py-3 border border-gray-300 rounded-lg text-gray-900 placeholder-gray-400 focus:outline-none focus:border-blue-600 focus:ring-1 focus:ring-blue-600 transition-all"
-                  placeholder="Create a strong password"
-                  required
-                  minLength={6}
-                />
-                <button
-                  type="button"
-                  onClick={() => setShowPassword(!showPassword)}
-                  className="absolute right-4 top-1/2 -translate-y-1/2 text-gray-400 hover:text-gray-600"
-                >
-                  {showPassword ? <EyeOff size={20} /> : <Eye size={20} />}
-                </button>
-              </div>
+        <div style={styles.socialButtons}>
+          <button type="button" style={styles.socialBtn}>Google</button>
+          <button type="button" style={styles.socialBtn}>GitHub</button>
+          <button type="button" style={styles.socialBtn}>SSO</button>
+        </div>
 
-              <motion.button
-                whileHover={{ scale: 1.01 }}
-                whileTap={{ scale: 0.98 }}
-                type="submit"
-                disabled={loading}
-                className="w-full py-3 bg-blue-600 hover:bg-blue-700 disabled:bg-gray-400 text-white font-semibold rounded-lg transition-all text-sm"
-              >
-                {loading ? (
-                  <div className="w-4 h-4 border-2 border-white border-t-transparent rounded-full animate-spin mx-auto" />
-                ) : (
-                  'Create Account'
-                )}
-              </motion.button>
-            </form>
+        <div style={styles.signinText}>
+          Already have an account?{' '}
+          <Link to="/login" style={styles.signinLink}>
+            Sign in
+          </Link>
+        </div>
 
-            <div className="mt-8 pt-8 border-t border-gray-200 text-center">
-              <p className="text-gray-600 text-sm">
-                Already have an account?{' '}
-                <Link to="/login" className="text-blue-600 hover:text-blue-700 font-medium">
-                  Log In
-                </Link>
-              </p>
-            </div>
-          </div>
-        </motion.div>
+        <p style={styles.footerText}>🔒 SECURE • SOC 2 • GDPR</p>
       </div>
+
+      <style>{`
+        @keyframes spin {
+          from { transform: rotate(0deg); }
+          to { transform: rotate(360deg); }
+        }
+        input[type="checkbox"] {
+          width: 16px;
+          height: 16px;
+          cursor: pointer;
+          accent-color: #667eea;
+        }
+        a {
+          transition: color 0.2s;
+        }
+        a:hover {
+          opacity: 0.8;
+        }
+        button:hover:not(:disabled) {
+          transform: translateY(-2px);
+          box-shadow: 0 8px 24px rgba(0, 0, 0, 0.15);
+        }
+      `}</style>
     </div>
   )
 }
