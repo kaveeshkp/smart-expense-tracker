@@ -1,10 +1,12 @@
 import { useState, useMemo } from 'react'
+import { Link, useLocation } from 'react-router-dom'
 import {
   Search, Filter, Download, ArrowUpRight, ArrowDownLeft,
   Coffee, Car, Zap, ShoppingBag, Utensils, Tv2, Heart,
   Briefcase, ChevronDown, X, CheckCircle2, Clock, AlertCircle,
-  SlidersHorizontal, Calendar,
+  SlidersHorizontal, Calendar, LayoutDashboard, PieChart, BarChart2, Plus,
 } from 'lucide-react'
+import { useAuth } from '../../context/AuthContext'
 
 // ── Types ─────────────────────────────────────────────────────────────────
 type Status = 'completed' | 'processing' | 'failed'
@@ -50,10 +52,19 @@ const statusMeta: Record<Status, { label: string; color: string; bg: string; ico
 
 // ── Component ─────────────────────────────────────────────────────────────
 export default function Transactions() {
+  const { user } = useAuth()
+  const location = useLocation()
   const [search, setSearch]   = useState('')
   const [category, setCategory] = useState('All')
   const [typeFilter, setTypeFilter] = useState<'all' | TxType>('all')
   const [showFilters, setShowFilters] = useState(false)
+
+  const navItems = [
+    { label: 'Dashboard', icon: <LayoutDashboard size={18} />, path: '/', active: location.pathname === '/' },
+    { label: 'Transactions', icon: <ArrowUpRight size={18} />, path: '/transactions', active: location.pathname === '/transactions' },
+    { label: 'Budgets', icon: <PieChart size={18} />, path: '/budgets', active: location.pathname === '/budgets' },
+    { label: 'Reports', icon: <BarChart2 size={18} />, path: '/reports', active: location.pathname === '/reports' },
+  ]
 
   const filtered = useMemo(() => {
     return ALL_TX.filter(tx => {
@@ -154,9 +165,66 @@ export default function Transactions() {
   }
 
   return (
-    <div style={s.page}>
-      <h1 style={s.heading}>Transactions</h1>
-      <p style={s.sub}>All your income and expense records in one place</p>
+    <div style={{ display: 'flex', minHeight: '100vh', background: '#f1f5f9' }}>
+      {/* Sidebar */}
+      <div style={{ width: '210px', background: '#fff', borderRight: '1px solid #e2e8f0', padding: '24px 0 16px', position: 'sticky', top: 0, height: '100vh', overflowY: 'auto' }}>
+        <div style={{ padding: '0 20px 28px', borderBottom: '1px solid #f1f5f9' }}>
+          <h1 style={{ fontSize: '20px', fontWeight: '800', color: '#4f46e5', margin: 0, letterSpacing: '-0.5px' }}>WealthTrack</h1>
+          <p style={{ fontSize: '11px', color: '#94a3b8', margin: '2px 0 0', fontWeight: '500' }}>Premium Account</p>
+        </div>
+
+        <nav style={{ padding: '20px 12px', flex: 1 }}>
+          {navItems.map((item) => (
+            <Link
+              key={item.label}
+              to={item.path}
+              style={{
+                display: 'flex',
+                alignItems: 'center',
+                gap: '10px',
+                padding: '10px 12px',
+                borderRadius: '10px',
+                marginBottom: '4px',
+                fontSize: '14px',
+                fontWeight: item.active ? '600' : '500',
+                color: item.active ? '#4f46e5' : '#64748b',
+                background: item.active ? 'rgba(99,102,241,0.08)' : 'transparent',
+                textDecoration: 'none',
+                transition: 'all 0.15s ease',
+                borderLeft: item.active ? '3px solid #4f46e5' : '3px solid transparent',
+              }}
+            >
+              {item.icon}
+              {item.label}
+            </Link>
+          ))}
+        </nav>
+
+        <div style={{ padding: '0 12px 12px', borderTop: '1px solid #f1f5f9', paddingTop: '12px' }}>
+          <button style={{
+            display: 'flex',
+            alignItems: 'center',
+            justifyContent: 'center',
+            gap: '8px',
+            width: '100%',
+            padding: '12px',
+            background: 'linear-gradient(135deg, #4f46e5 0%, #7c3aed 100%)',
+            color: '#fff',
+            border: 'none',
+            borderRadius: '12px',
+            fontSize: '14px',
+            fontWeight: '700',
+            cursor: 'pointer',
+          }}>
+            <Plus size={16} /> Add Expense
+          </button>
+        </div>
+      </div>
+
+      {/* Main Content */}
+      <div style={{ flex: 1, padding: '28px', fontFamily: "'DM Sans', sans-serif", overflowY: 'auto' }}>
+      <h1 style={{ fontSize: '22px', fontWeight: '800', color: '#0f172a', margin: '0 0 4px', letterSpacing: '-0.5px' }}>Transactions</h1>
+      <p style={{ fontSize: '13px', color: '#94a3b8', margin: '0 0 24px' }}>All your income and expense records in one place</p>
 
       {/* Summary */}
       <div style={s.summaryRow}>
@@ -260,6 +328,7 @@ export default function Transactions() {
             )}
           </tbody>
         </table>
+      </div>
       </div>
     </div>
   )

@@ -1,295 +1,205 @@
 import { useState } from 'react'
-import {
-  AreaChart, Area, BarChart, Bar, PieChart, Pie, Cell,
-  XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, Legend,
-} from 'recharts'
-import {
-  TrendingUp, TrendingDown, Download, Calendar,
-  ChevronDown, ArrowUpRight,
-} from 'lucide-react'
+import { Link, useLocation } from 'react-router-dom'
+import { LayoutDashboard, ArrowLeftRight, PieChart, BarChart2, Plus, Search, Bell, TrendingUp, TrendingDown, Download, Calendar } from 'lucide-react'
+import { useAuth } from '../../context/AuthContext'
 
-// ── Data ──────────────────────────────────────────────────────────────────
-const monthlyData = [
-  { month: 'Dec', income: 65000, expense: 38000 },
-  { month: 'Jan', income: 65000, expense: 41000 },
-  { month: 'Feb', income: 72000, expense: 36000 },
-  { month: 'Mar', income: 65000, expense: 45000 },
-  { month: 'Apr', income: 73500, expense: 39000 },
-  { month: 'May', income: 73500, expense: 28000 },
-]
 
-const categoryData = [
-  { category: 'Food',          amount: 3200, budget: 4000, fill: '#6366f1' },
-  { category: 'Transport',     amount: 1800, budget: 2500, fill: '#8b5cf6' },
-  { category: 'Bills',         amount: 4500, budget: 5000, fill: '#ef4444' },
-  { category: 'Entertainment', amount: 1200, budget: 2000, fill: '#f59e0b' },
-  { category: 'Health',        amount: 1200, budget: 3000, fill: '#10b981' },
-  { category: 'Shopping',      amount: 2450, budget: 5000, fill: '#3b82f6' },
-]
+const Reports = () => {
+  const { user } = useAuth()
+  const location = useLocation()
+  const [dateRange, setDateRange] = useState('month')
 
-const pieData = [
-  { name: 'Food',          value: 3200, fill: '#6366f1' },
-  { name: 'Transport',     value: 1800, fill: '#8b5cf6' },
-  { name: 'Bills',         value: 4500, fill: '#ef4444' },
-  { name: 'Entertainment', value: 1200, fill: '#f59e0b' },
-  { name: 'Health',        value: 1200, fill: '#10b981' },
-  { name: 'Shopping',      value: 2450, fill: '#3b82f6' },
-]
+  const navItems = [
+    { label: 'Dashboard', icon: <LayoutDashboard size={18} />, path: '/', active: location.pathname === '/' },
+    { label: 'Transactions', icon: <ArrowLeftRight size={18} />, path: '/transactions', active: location.pathname === '/transactions' },
+    { label: 'Budgets', icon: <PieChart size={18} />, path: '/budgets', active: location.pathname === '/budgets' },
+    { label: 'Reports', icon: <BarChart2 size={18} />, path: '/reports', active: location.pathname === '/reports' },
+  ]
 
-const dailySpend = [
-  { day: '1', amount: 340 }, { day: '3', amount: 620 }, { day: '5', amount: 280 },
-  { day: '7', amount: 1250 }, { day: '9', amount: 450 }, { day: '10', amount: 800 },
-  { day: '12', amount: 280 },
-]
+  const monthlyStats = [
+    { month: 'Jan', income: 65000, expense: 38000 },
+    { month: 'Feb', income: 72000, expense: 36000 },
+    { month: 'Mar', income: 65000, expense: 45000 },
+    { month: 'Apr', income: 73500, expense: 39000 },
+    { month: 'May', income: 73500, expense: 28000 },
+  ]
 
-const totalSpend = pieData.reduce((a, d) => a + d.value, 0)
+  const categoryExpenses = [
+    { category: 'Food', amount: 3200, budget: 4000, percentage: 80, color: '#6366f1' },
+    { category: 'Transport', amount: 1800, budget: 2500, percentage: 72, color: '#8b5cf6' },
+    { category: 'Bills', amount: 4500, budget: 5000, percentage: 90, color: '#ef4444' },
+    { category: 'Entertainment', amount: 1200, budget: 2000, percentage: 60, color: '#f59e0b' },
+    { category: 'Health', amount: 1200, budget: 3000, percentage: 40, color: '#10b981' },
+    { category: 'Shopping', amount: 2450, budget: 5000, percentage: 49, color: '#3b82f6' },
+  ]
 
-// ── Custom Tooltip ─────────────────────────────────────────────────────────
-const CustomTooltip = ({ active, payload, label }: any) => {
-  if (!active || !payload?.length) return null
-  return (
-    <div style={{
-      background: '#fff', border: '1px solid #e2e8f0', borderRadius: '10px',
-      padding: '10px 14px', fontSize: '13px', boxShadow: '0 4px 20px rgba(0,0,0,0.1)',
-    }}>
-      <p style={{ fontWeight: '700', color: '#0f172a', margin: '0 0 6px' }}>{label}</p>
-      {payload.map((p: any) => (
-        <p key={p.name} style={{ margin: '2px 0', color: p.color, fontWeight: '600' }}>
-          {p.name}: ₹{Number(p.value).toLocaleString()}
-        </p>
-      ))}
-    </div>
-  )
-}
-
-// ── Component ─────────────────────────────────────────────────────────────
-export default function Reports() {
-  const [period, setPeriod] = useState('May 2026')
-
-  const s: Record<string, React.CSSProperties> = {
-    page:    { padding: '28px', background: '#f1f5f9', minHeight: '100vh', fontFamily: "'DM Sans', sans-serif" },
-    topRow:  { display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', marginBottom: '24px' },
-    heading: { fontSize: '22px', fontWeight: '800', color: '#0f172a', margin: '0 0 4px', letterSpacing: '-0.5px' },
-    sub:     { fontSize: '13px', color: '#94a3b8', margin: 0 },
-    actions: { display: 'flex', gap: '10px' },
-    btn:     {
-      display: 'flex', alignItems: 'center', gap: '6px', padding: '9px 14px',
-      border: '1px solid #e2e8f0', borderRadius: '10px', background: '#fff',
-      color: '#64748b', fontSize: '13px', fontWeight: '600', cursor: 'pointer',
-    },
-    exportBtn: {
-      display: 'flex', alignItems: 'center', gap: '6px', padding: '9px 14px',
-      border: 'none', borderRadius: '10px',
-      background: 'linear-gradient(135deg,#4f46e5,#7c3aed)',
-      color: '#fff', fontSize: '13px', fontWeight: '700', cursor: 'pointer',
-    },
-
-    kpiRow: { display: 'grid', gridTemplateColumns: 'repeat(4,1fr)', gap: '14px', marginBottom: '20px' },
-    kpiCard: (accent?: string): React.CSSProperties => ({
-      background: accent || '#fff', border: '1px solid #e2e8f0',
-      borderRadius: '14px', padding: '18px 20px',
-    }),
-    kpiLabel: { fontSize: '11px', fontWeight: '700', color: '#94a3b8', letterSpacing: '0.4px', textTransform: 'uppercase' as const, margin: '0 0 6px' },
-    kpiValue: { fontSize: '22px', fontWeight: '800', color: '#0f172a', margin: '0 0 8px', letterSpacing: '-0.5px' },
-    kpiBadge: (up: boolean): React.CSSProperties => ({
-      display: 'inline-flex', alignItems: 'center', gap: '4px',
-      fontSize: '12px', fontWeight: '600',
-      color: up ? '#16a34a' : '#dc2626',
-      background: up ? '#dcfce7' : '#fee2e2',
-      padding: '3px 8px', borderRadius: '20px',
-    }),
-
-    chartsGrid: { display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '16px', marginBottom: '16px' },
-    chartCard: {
-      background: '#fff', border: '1px solid #e2e8f0',
-      borderRadius: '16px', padding: '22px',
-    },
-    chartTitle: { fontSize: '15px', fontWeight: '700', color: '#0f172a', margin: '0 0 4px' },
-    chartSub: { fontSize: '12px', color: '#94a3b8', margin: '0 0 20px' },
-
-    fullChart: {
-      background: '#fff', border: '1px solid #e2e8f0',
-      borderRadius: '16px', padding: '22px', marginBottom: '16px',
-    },
-
-    bottomGrid: { display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '16px' },
-
-    pieRow: { display: 'flex', alignItems: 'center', gap: '20px' },
-    legendList: { flex: 1 },
-    legendItem: { display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: '10px' },
-    legendLeft: { display: 'flex', alignItems: 'center', gap: '8px' },
-    legendDot: (fill: string): React.CSSProperties => ({ width: '10px', height: '10px', borderRadius: '50%', background: fill, flexShrink: 0 }),
-    legendName: { fontSize: '13px', color: '#334155', fontWeight: '500' },
-    legendPct: { fontSize: '12px', fontWeight: '700', color: '#64748b' },
-
-    insightCard: {
-      background: '#fff', border: '1px solid #e2e8f0', borderRadius: '16px', padding: '22px',
-    },
-    insightItem: {
-      display: 'flex', alignItems: 'center', justifyContent: 'space-between',
-      padding: '12px 0', borderBottom: '1px solid #f8fafc',
-    },
-    insightName: { fontSize: '14px', fontWeight: '600', color: '#0f172a', margin: '0 0 2px' },
-    insightSub: { fontSize: '12px', color: '#94a3b8', margin: 0 },
-    insightAmt: { fontSize: '14px', fontWeight: '700', color: '#ef4444' },
-    insightPct: { fontSize: '11px', color: '#94a3b8', textAlign: 'right' as const, marginTop: '2px' },
-  }
+  const totalExpense = categoryExpenses.reduce((sum, cat) => sum + cat.amount, 0)
+  const totalBudget = categoryExpenses.reduce((sum, cat) => sum + cat.budget, 0)
+  const savingsRate = (((totalBudget - totalExpense) / totalBudget) * 100).toFixed(1)
 
   return (
-    <div style={s.page}>
-      {/* Header */}
-      <div style={s.topRow}>
-        <div>
-          <h1 style={s.heading}>Reports</h1>
-          <p style={s.sub}>Insights and analytics for your finances</p>
+    <div style={{ display: 'flex', minHeight: '100vh', background: '#f1f5f9' }}>
+      {/* Sidebar */}
+      <div style={{ width: '210px', background: '#fff', borderRight: '1px solid #e2e8f0', padding: '24px 0 16px', position: 'sticky', top: 0, height: '100vh' }}>
+        <div style={{ padding: '0 20px 28px', borderBottom: '1px solid #f1f5f9' }}>
+          <h1 style={{ fontSize: '20px', fontWeight: '800', color: '#4f46e5', margin: 0, letterSpacing: '-0.5px' }}>WealthTrack</h1>
+          <p style={{ fontSize: '11px', color: '#94a3b8', margin: '2px 0 0', fontWeight: '500' }}>Premium Account</p>
         </div>
-        <div style={s.actions}>
-          <button style={s.btn}><Calendar size={14}/> {period} <ChevronDown size={12}/></button>
-          <button style={s.exportBtn}><Download size={14}/> Export PDF</button>
+
+        <nav style={{ padding: '20px 12px', flex: 1 }}>
+          {navItems.map((item) => (
+            <Link
+              key={item.label}
+              to={item.path}
+              style={{
+                display: 'flex',
+                alignItems: 'center',
+                gap: '10px',
+                padding: '10px 12px',
+                borderRadius: '10px',
+                marginBottom: '4px',
+                fontSize: '14px',
+                fontWeight: item.active ? '600' : '500',
+                color: item.active ? '#4f46e5' : '#64748b',
+                background: item.active ? 'rgba(99,102,241,0.08)' : 'transparent',
+                textDecoration: 'none',
+                transition: 'all 0.15s ease',
+                borderLeft: item.active ? '3px solid #4f46e5' : '3px solid transparent',
+              }}
+            >
+              {item.icon}
+              {item.label}
+            </Link>
+          ))}
+        </nav>
+
+        <div style={{ padding: '0 12px 12px', borderTop: '1px solid #f1f5f9', paddingTop: '12px' }}>
+          <button style={{
+            display: 'flex',
+            alignItems: 'center',
+            justifyContent: 'center',
+            gap: '8px',
+            width: '100%',
+            padding: '12px',
+            background: 'linear-gradient(135deg, #4f46e5 0%, #7c3aed 100%)',
+            color: '#fff',
+            border: 'none',
+            borderRadius: '12px',
+            fontSize: '14px',
+            fontWeight: '700',
+            cursor: 'pointer',
+          }}>
+            <Plus size={16} /> Add Expense
+          </button>
         </div>
       </div>
 
-      {/* KPI Row */}
-      <div style={s.kpiRow}>
-        <div style={s.kpiCard()}>
-          <p style={s.kpiLabel}>Total Income</p>
-          <p style={s.kpiValue}>₹73,500</p>
-          <span style={s.kpiBadge(true)}><TrendingUp size={11}/> +12.3%</span>
-        </div>
-        <div style={s.kpiCard()}>
-          <p style={s.kpiLabel}>Total Expense</p>
-          <p style={{ ...s.kpiValue, color: '#ef4444' }}>₹14,350</p>
-          <span style={s.kpiBadge(false)}><TrendingDown size={11}/> +8.1%</span>
-        </div>
-        <div style={s.kpiCard('#f0fdf4')}>
-          <p style={s.kpiLabel}>Net Savings</p>
-          <p style={{ ...s.kpiValue, color: '#16a34a' }}>₹59,150</p>
-          <span style={s.kpiBadge(true)}><TrendingUp size={11}/> +14.7%</span>
-        </div>
-        <div style={s.kpiCard()}>
-          <p style={s.kpiLabel}>Savings Rate</p>
-          <p style={s.kpiValue}>16.8%</p>
-          <span style={s.kpiBadge(true)}><ArrowUpRight size={11}/> Above target</span>
-        </div>
-      </div>
-
-      {/* Income vs Expense Area Chart */}
-      <div style={s.fullChart}>
-        <p style={s.chartTitle}>Income vs Expenses</p>
-        <p style={s.chartSub}>Last 6 months overview</p>
-        <ResponsiveContainer width="100%" height={240}>
-          <AreaChart data={monthlyData} margin={{ top: 5, right: 20, bottom: 5, left: 10 }}>
-            <defs>
-              <linearGradient id="incomeGrad" x1="0" y1="0" x2="0" y2="1">
-                <stop offset="5%" stopColor="#6366f1" stopOpacity={0.15}/>
-                <stop offset="95%" stopColor="#6366f1" stopOpacity={0}/>
-              </linearGradient>
-              <linearGradient id="expenseGrad" x1="0" y1="0" x2="0" y2="1">
-                <stop offset="5%" stopColor="#ef4444" stopOpacity={0.12}/>
-                <stop offset="95%" stopColor="#ef4444" stopOpacity={0}/>
-              </linearGradient>
-            </defs>
-            <CartesianGrid strokeDasharray="3 3" stroke="#f1f5f9" vertical={false}/>
-            <XAxis dataKey="month" axisLine={false} tickLine={false} tick={{ fontSize: 12, fill: '#94a3b8' }}/>
-            <YAxis axisLine={false} tickLine={false} tick={{ fontSize: 12, fill: '#94a3b8' }} tickFormatter={v => `₹${(v/1000).toFixed(0)}k`}/>
-            <Tooltip content={<CustomTooltip />}/>
-            <Legend wrapperStyle={{ fontSize: '13px', paddingTop: '10px' }}/>
-            <Area type="monotone" dataKey="income" name="Income" stroke="#6366f1" strokeWidth={2.5} fill="url(#incomeGrad)"/>
-            <Area type="monotone" dataKey="expense" name="Expense" stroke="#ef4444" strokeWidth={2.5} fill="url(#expenseGrad)"/>
-          </AreaChart>
-        </ResponsiveContainer>
-      </div>
-
-      {/* Two columns: Bar + Pie */}
-      <div style={s.chartsGrid}>
-        {/* Category Bar Chart */}
-        <div style={s.chartCard}>
-          <p style={s.chartTitle}>Spending by Category</p>
-          <p style={s.chartSub}>Actual vs budget this month</p>
-          <ResponsiveContainer width="100%" height={220}>
-            <BarChart data={categoryData} margin={{ top: 5, right: 10, left: 10, bottom: 5 }}>
-              <CartesianGrid strokeDasharray="3 3" stroke="#f1f5f9" vertical={false}/>
-              <XAxis dataKey="category" axisLine={false} tickLine={false} tick={{ fontSize: 11, fill: '#94a3b8' }}/>
-              <YAxis axisLine={false} tickLine={false} tick={{ fontSize: 11, fill: '#94a3b8' }} tickFormatter={v => `₹${(v/1000).toFixed(0)}k`}/>
-              <Tooltip content={<CustomTooltip />}/>
-              <Bar dataKey="budget" name="Budget" fill="#e2e8f0" radius={[4,4,0,0]}/>
-              <Bar dataKey="amount" name="Spent" radius={[4,4,0,0]}>
-                {categoryData.map((entry, index) => <Cell key={index} fill={entry.fill}/>)}
-              </Bar>
-            </BarChart>
-          </ResponsiveContainer>
+      {/* Main Content */}
+      <div style={{ flex: 1, display: 'flex', flexDirection: 'column' }}>
+        {/* Topbar */}
+        <div style={{ background: '#fff', borderBottom: '1px solid #e2e8f0', padding: '16px 28px', display: 'flex', alignItems: 'center', justifyContent: 'space-between', position: 'sticky', top: 0, zIndex: 10 }}>
+          <div>
+            <h2 style={{ fontSize: '20px', fontWeight: '700', color: '#0f172a', margin: 0 }}>Financial Reports</h2>
+            <p style={{ fontSize: '13px', color: '#94a3b8', margin: '2px 0 0' }}>{new Date().toLocaleDateString()}</p>
+          </div>
+          <div style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
+            <select
+              value={dateRange}
+              onChange={(e) => setDateRange(e.target.value)}
+              style={{
+                padding: '8px 12px',
+                background: '#f8fafc',
+                border: '1px solid #e2e8f0',
+                borderRadius: '10px',
+                fontSize: '13px',
+                cursor: 'pointer',
+              }}
+            >
+              <option value="week">This Week</option>
+              <option value="month">This Month</option>
+              <option value="quarter">This Quarter</option>
+              <option value="year">This Year</option>
+            </select>
+            <button style={{ background: '#f8fafc', border: '1px solid #e2e8f0', borderRadius: '10px', padding: '8px', cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center', color: '#64748b' }}>
+              <Download size={18} />
+            </button>
+          </div>
         </div>
 
-        {/* Pie Chart */}
-        <div style={s.chartCard}>
-          <p style={s.chartTitle}>Expense Breakdown</p>
-          <p style={s.chartSub}>Distribution by category</p>
-          <div style={s.pieRow}>
-            <ResponsiveContainer width={160} height={160}>
-              <PieChart>
-                <Pie data={pieData} cx="50%" cy="50%" innerRadius={45} outerRadius={72} dataKey="value" paddingAngle={3}>
-                  {pieData.map((entry, index) => <Cell key={index} fill={entry.fill}/>)}
-                </Pie>
-                <Tooltip formatter={(v: any) => [`₹${Number(v).toLocaleString()}`, '']}/>
-              </PieChart>
-            </ResponsiveContainer>
-            <div style={s.legendList}>
-              {pieData.map(d => (
-                <div key={d.name} style={s.legendItem}>
-                  <div style={s.legendLeft}>
-                    <div style={s.legendDot(d.fill)}/>
-                    <span style={s.legendName}>{d.name}</span>
+        {/* Content */}
+        <div style={{ padding: '24px 28px', flex: 1, overflowY: 'auto' }}>
+          {/* Key Metrics */}
+          <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(240px, 1fr))', gap: '16px', marginBottom: '24px' }}>
+            <div style={{ background: '#fff', borderRadius: '16px', border: '1px solid #e2e8f0', padding: '20px' }}>
+              <div style={{ fontSize: '13px', color: '#94a3b8', fontWeight: '600', marginBottom: '8px' }}>Total Income</div>
+              <p style={{ fontSize: '28px', fontWeight: '800', color: '#0f172a', margin: '0 0 8px' }}>₹73,500</p>
+              <div style={{ display: 'flex', alignItems: 'center', gap: '4px', color: '#10b981', fontSize: '13px', fontWeight: '600' }}>
+                <TrendingUp size={16} /> 12% vs last month
+              </div>
+            </div>
+
+            <div style={{ background: '#fff', borderRadius: '16px', border: '1px solid #e2e8f0', padding: '20px' }}>
+              <div style={{ fontSize: '13px', color: '#94a3b8', fontWeight: '600', marginBottom: '8px' }}>Total Expense</div>
+              <p style={{ fontSize: '28px', fontWeight: '800', color: '#0f172a', margin: '0 0 8px' }}>₹{totalExpense.toLocaleString()}</p>
+              <div style={{ display: 'flex', alignItems: 'center', gap: '4px', color: '#ef4444', fontSize: '13px', fontWeight: '600' }}>
+                <TrendingDown size={16} /> 8% vs last month
+              </div>
+            </div>
+
+            <div style={{ background: 'linear-gradient(135deg, #4f46e5 0%, #7c3aed 100%)', borderRadius: '16px', padding: '20px', color: '#fff' }}>
+              <div style={{ fontSize: '13px', color: 'rgba(255,255,255,0.8)', fontWeight: '600', marginBottom: '8px' }}>Savings Rate</div>
+              <p style={{ fontSize: '28px', fontWeight: '800', margin: '0 0 8px' }}>{savingsRate}%</p>
+              <div style={{ fontSize: '13px', color: 'rgba(255,255,255,0.9)' }}>On track this month</div>
+            </div>
+          </div>
+
+          {/* Monthly Trend */}
+          <div style={{ background: '#fff', borderRadius: '16px', border: '1px solid #e2e8f0', padding: '20px', marginBottom: '24px' }}>
+            <h3 style={{ fontSize: '16px', fontWeight: '700', margin: '0 0 16px', color: '#0f172a' }}>Monthly Trend</h3>
+            <div style={{ display: 'grid', gridTemplateColumns: 'repeat(5, 1fr)', gap: '12px' }}>
+              {monthlyStats.map((stat, i) => (
+                <div key={i} style={{ padding: '12px', background: '#f8fafc', borderRadius: '10px' }}>
+                  <p style={{ fontSize: '12px', color: '#94a3b8', margin: '0 0 8px', fontWeight: '500' }}>{stat.month}</p>
+                  <div style={{ marginBottom: '4px' }}>
+                    <div style={{ fontSize: '12px', fontWeight: '600', color: '#10b981' }}>+₹{(stat.income / 1000).toFixed(0)}k</div>
                   </div>
-                  <span style={s.legendPct}>{Math.round((d.value / totalSpend) * 100)}%</span>
+                  <div>
+                    <div style={{ fontSize: '12px', fontWeight: '600', color: '#ef4444' }}>-₹{(stat.expense / 1000).toFixed(0)}k</div>
+                  </div>
+                </div>
+              ))}
+            </div>
+          </div>
+
+          {/* Category Breakdown */}
+          <div style={{ background: '#fff', borderRadius: '16px', border: '1px solid #e2e8f0', padding: '20px' }}>
+            <h3 style={{ fontSize: '16px', fontWeight: '700', margin: '0 0 16px', color: '#0f172a' }}>Expense by Category</h3>
+            <div>
+              {categoryExpenses.map((cat, i) => (
+                <div key={i} style={{ marginBottom: '16px', paddingBottom: '16px', borderBottom: i !== categoryExpenses.length - 1 ? '1px solid #f1f5f9' : 'none' }}>
+                  <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: '8px' }}>
+                    <span style={{ fontSize: '14px', fontWeight: '600', color: '#0f172a' }}>{cat.category}</span>
+                    <span style={{ fontSize: '14px', fontWeight: '700', color: '#0f172a' }}>₹{cat.amount.toLocaleString()} / ₹{cat.budget.toLocaleString()}</span>
+                  </div>
+                  <div style={{ width: '100%', height: '8px', background: '#f1f5f9', borderRadius: '4px', overflow: 'hidden' }}>
+                    <div
+                      style={{
+                        height: '100%',
+                        background: cat.color,
+                        width: `${Math.min(cat.percentage, 100)}%`,
+                        transition: 'width 0.3s',
+                      }}
+                    ></div>
+                  </div>
+                  <p style={{ fontSize: '12px', color: '#94a3b8', margin: '6px 0 0', fontWeight: '500' }}>{cat.percentage}% of budget</p>
                 </div>
               ))}
             </div>
           </div>
         </div>
       </div>
-
-      {/* Bottom: Daily Spend + Top Categories */}
-      <div style={s.bottomGrid}>
-        {/* Daily Spend Bar */}
-        <div style={s.chartCard}>
-          <p style={s.chartTitle}>Daily Spending</p>
-          <p style={s.chartSub}>May 2026 — each transaction</p>
-          <ResponsiveContainer width="100%" height={180}>
-            <BarChart data={dailySpend} margin={{ top: 5, right: 10, left: 0, bottom: 5 }}>
-              <CartesianGrid strokeDasharray="3 3" stroke="#f1f5f9" vertical={false}/>
-              <XAxis dataKey="day" axisLine={false} tickLine={false} tick={{ fontSize: 11, fill: '#94a3b8' }} label={{ value: 'Day', position: 'insideBottom', offset: -2, fontSize: 11, fill: '#94a3b8' }}/>
-              <YAxis axisLine={false} tickLine={false} tick={{ fontSize: 11, fill: '#94a3b8' }} tickFormatter={v => `₹${v}`}/>
-              <Tooltip content={<CustomTooltip />}/>
-              <Bar dataKey="amount" name="Spent" fill="#6366f1" radius={[4,4,0,0]}/>
-            </BarChart>
-          </ResponsiveContainer>
-        </div>
-
-        {/* Top Spending Categories */}
-        <div style={s.insightCard}>
-          <p style={{ ...s.chartTitle, marginBottom: '4px' }}>Top Categories</p>
-          <p style={{ ...s.chartSub, marginBottom: '12px' }}>Highest spend this month</p>
-          {[...categoryData].sort((a, b) => b.amount - a.amount).map((c, i) => (
-            <div key={c.category} style={{ ...s.insightItem, ...(i === categoryData.length - 1 ? { borderBottom: 'none' } : {}) }}>
-              <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
-                <span style={{
-                  width: '28px', height: '28px', borderRadius: '8px',
-                  background: c.fill + '22', display: 'flex', alignItems: 'center',
-                  justifyContent: 'center', fontSize: '12px', fontWeight: '800', color: c.fill,
-                }}>{i + 1}</span>
-                <div>
-                  <p style={s.insightName}>{c.category}</p>
-                  <p style={s.insightSub}>Budget: ₹{c.budget.toLocaleString()}</p>
-                </div>
-              </div>
-              <div style={{ textAlign: 'right' }}>
-                <p style={{ ...s.insightAmt, color: c.fill }}>₹{c.amount.toLocaleString()}</p>
-                <p style={s.insightPct}>{Math.round((c.amount / c.budget) * 100)}% used</p>
-              </div>
-            </div>
-          ))}
-        </div>
-      </div>
     </div>
   )
 }
+
+export default Reports

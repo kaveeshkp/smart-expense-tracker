@@ -1,9 +1,11 @@
 import { useState } from 'react'
+import { Link, useLocation } from 'react-router-dom'
 import {
   Plus, Utensils, Car, Zap, Tv2, Heart, ShoppingBag,
   Briefcase, Edit2, Trash2, TrendingUp, AlertTriangle, CheckCircle,
-  X, Save,
+  X, Save, LayoutDashboard, ArrowLeftRight, PieChart, BarChart2,
 } from 'lucide-react'
+import { useAuth } from '../../context/AuthContext'
 
 // ── Types ─────────────────────────────────────────────────────────────────
 interface Budget {
@@ -44,6 +46,16 @@ export default function Budgets() {
   const [showModal, setShowModal] = useState(false)
   const [editId, setEditId] = useState<number | null>(null)
   const [form, setForm] = useState({ category: 'Food', limit: '' })
+
+  const { user } = useAuth()
+  const location = useLocation()
+
+  const navItems = [
+    { label: 'Dashboard', icon: <LayoutDashboard size={18} />, path: '/', active: location.pathname === '/' },
+    { label: 'Transactions', icon: <ArrowLeftRight size={18} />, path: '/transactions', active: location.pathname === '/transactions' },
+    { label: 'Budgets', icon: <PieChart size={18} />, path: '/budgets', active: location.pathname === '/budgets' },
+    { label: 'Reports', icon: <BarChart2 size={18} />, path: '/reports', active: location.pathname === '/reports' },
+  ]
 
   const totalLimit = budgets.reduce((a, b) => a + b.limit, 0)
   const totalSpent = budgets.reduce((a, b) => a + b.spent, 0)
@@ -162,7 +174,63 @@ export default function Budgets() {
   }
 
   return (
-    <div style={s.page}>
+    <div style={{ display: 'flex', background: '#f1f5f9', minHeight: '100vh' }}>
+      {/* Sidebar */}
+      <div style={{
+        width: '260px', background: '#fff', borderRight: '1px solid #e2e8f0',
+        padding: '24px 20px', fontFamily: "'DM Sans', sans-serif", overflowY: 'auto',
+        position: 'fixed' as const, height: '100vh', left: 0, top: 0,
+      }}>
+        {/* Logo */}
+        <Link to="/" style={{ textDecoration: 'none', color: 'inherit' }}>
+          <div style={{ marginBottom: '32px', cursor: 'pointer' }}>
+            <div style={{ fontSize: '18px', fontWeight: '900', color: '#4f46e5', letterSpacing: '-0.5px' }}>WealthTrack</div>
+            <p style={{ fontSize: '11px', color: '#94a3b8', margin: '4px 0 0', fontWeight: '500' }}>Smart Finance</p>
+          </div>
+        </Link>
+
+        {/* Navigation */}
+        <nav style={{ marginBottom: '32px' }}>
+          {navItems.map((item) => (
+            <Link key={item.path} to={item.path} style={{ textDecoration: 'none', color: 'inherit' }}>
+              <button style={{
+                width: '100%', display: 'flex', alignItems: 'center', gap: '12px',
+                padding: '12px 14px', borderRadius: '10px', border: 'none',
+                background: item.active ? '#ede9fe' : 'transparent',
+                color: item.active ? '#4f46e5' : '#64748b',
+                cursor: 'pointer', fontSize: '14px', fontWeight: item.active ? '700' : '500',
+                transition: 'all 0.2s ease', marginBottom: '8px',
+              }}>
+                {item.icon}
+                {item.label}
+              </button>
+            </Link>
+          ))}
+        </nav>
+
+        {/* Add Expense */}
+        <div style={{ paddingBottom: '20px', borderBottom: '1px solid #e2e8f0', marginBottom: '20px' }}>
+          <button style={{
+            width: '100%', display: 'flex', alignItems: 'center', justifyContent: 'center',
+            gap: '8px', padding: '12px', background: 'linear-gradient(135deg,#4f46e5,#7c3aed)',
+            color: '#fff', border: 'none', borderRadius: '10px', fontWeight: '700',
+            cursor: 'pointer', fontSize: '14px',
+          }}>
+            <Plus size={16} /> Add Expense
+          </button>
+        </div>
+
+        {/* User Info */}
+        {user && (
+          <div style={{ padding: '12px', background: '#f8fafc', borderRadius: '10px' }}>
+            <p style={{ fontSize: '12px', color: '#94a3b8', margin: '0 0 2px', fontWeight: '700', textTransform: 'uppercase' }}>Logged in</p>
+            <p style={{ fontSize: '13px', color: '#0f172a', margin: 0, fontWeight: '600', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{user.email}</p>
+          </div>
+        )}
+      </div>
+
+      {/* Main Content */}
+      <div style={{ flex: 1, padding: '28px', fontFamily: "'DM Sans', sans-serif", overflowY: 'auto', marginLeft: '260px' }}>
       <div style={s.topRow}>
         <div>
           <h1 style={s.heading}>Budgets</h1>
@@ -250,6 +318,7 @@ export default function Budgets() {
           </div>
         </div>
       )}
+      </div>
     </div>
   )
 }
