@@ -7,6 +7,7 @@ import org.springframework.stereotype.Service;
 
 import com.smart.expense_tracker.dto.AuthRequest;
 import com.smart.expense_tracker.dto.AuthResponse;
+import com.smart.expense_tracker.dto.LoginRequest;
 import com.smart.expense_tracker.entity.User;
 import com.smart.expense_tracker.exception.EmailAlreadyExistsException;
 import com.smart.expense_tracker.exception.InvalidCredentialsException;
@@ -47,7 +48,7 @@ public class AuthService {
         return new AuthResponse(token, user.getFullName(), user.getId());
     }
 
-    public AuthResponse login(AuthRequest request) {
+    public AuthResponse login(LoginRequest request) {
         logger.info("Attempting to login user with email: {}", request.getEmail());
 
         User user = userRepository.findByEmail(request.getEmail())

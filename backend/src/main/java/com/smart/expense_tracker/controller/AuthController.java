@@ -9,6 +9,7 @@ import org.springframework.web.bind.annotation.RestController;
 
 import com.smart.expense_tracker.dto.AuthRequest;
 import com.smart.expense_tracker.dto.AuthResponse;
+import com.smart.expense_tracker.dto.LoginRequest;
 import com.smart.expense_tracker.service.AuthService;
 
 import io.swagger.v3.oas.annotations.Operation;
@@ -50,7 +51,7 @@ public class AuthController {
             @ApiResponse(responseCode = "400", description = "Validation failed"),
             @ApiResponse(responseCode = "401", description = "Invalid credentials")
     })
-    public ResponseEntity<AuthResponse> login(@Valid @RequestBody AuthRequest request) {
+    public ResponseEntity<AuthResponse> login(@Valid @RequestBody LoginRequest request) {
         return ResponseEntity.ok(authService.login(request));
     }
 }

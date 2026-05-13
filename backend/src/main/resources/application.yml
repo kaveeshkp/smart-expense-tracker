@@ -15,6 +15,9 @@ spring:
         format_sql: true
         dialect: org.hibernate.dialect.MySQLDialect
 
+cors:
+  allowed-origins: ${CORS_ALLOWED_ORIGINS:http://localhost:5173,http://localhost:3000}
+
 jwt:
   secret: ${JWT_SECRET:change_me_in_production_use_strong_random_key_256bit_minimum}
   expiration: ${JWT_EXPIRATION:86400000}
