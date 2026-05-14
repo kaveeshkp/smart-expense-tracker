@@ -2,6 +2,7 @@ import { useState } from 'react'
 import { Link, useLocation } from 'react-router-dom'
 import { LayoutDashboard, ArrowLeftRight, PieChart, BarChart2, Plus, Search, Bell, TrendingUp, TrendingDown, Download, Calendar } from 'lucide-react'
 import { useAuth } from '../../context/AuthContext'
+import DashboardSidebar from '../../components/DashboardSidebar'
 
 
 const Reports = () => {
@@ -10,10 +11,10 @@ const Reports = () => {
   const [dateRange, setDateRange] = useState('month')
 
   const navItems = [
-    { label: 'Dashboard', icon: <LayoutDashboard size={18} />, path: '/', active: location.pathname === '/' },
-    { label: 'Transactions', icon: <ArrowLeftRight size={18} />, path: '/transactions', active: location.pathname === '/transactions' },
-    { label: 'Budgets', icon: <PieChart size={18} />, path: '/budgets', active: location.pathname === '/budgets' },
-    { label: 'Reports', icon: <BarChart2 size={18} />, path: '/reports', active: location.pathname === '/reports' },
+    { label: 'Dashboard', icon: <LayoutDashboard size={18} />, path: '/' },
+    { label: 'Transactions', icon: <ArrowLeftRight size={18} />, path: '/transactions' },
+    { label: 'Budgets', icon: <PieChart size={18} />, path: '/budgets' },
+    { label: 'Reports', icon: <BarChart2 size={18} />, path: '/reports' },
   ]
 
   const monthlyStats = [
@@ -40,59 +41,7 @@ const Reports = () => {
   return (
     <div style={{ display: 'flex', minHeight: '100vh', background: '#f1f5f9' }}>
       {/* Sidebar */}
-      <div style={{ width: '210px', background: '#fff', borderRight: '1px solid #e2e8f0', padding: '24px 0 16px', position: 'sticky', top: 0, height: '100vh' }}>
-        <div style={{ padding: '0 20px 28px', borderBottom: '1px solid #f1f5f9' }}>
-          <h1 style={{ fontSize: '20px', fontWeight: '800', color: '#4f46e5', margin: 0, letterSpacing: '-0.5px' }}>WealthTrack</h1>
-          <p style={{ fontSize: '11px', color: '#94a3b8', margin: '2px 0 0', fontWeight: '500' }}>Premium Account</p>
-        </div>
-
-        <nav style={{ padding: '20px 12px', flex: 1 }}>
-          {navItems.map((item) => (
-            <Link
-              key={item.label}
-              to={item.path}
-              style={{
-                display: 'flex',
-                alignItems: 'center',
-                gap: '10px',
-                padding: '10px 12px',
-                borderRadius: '10px',
-                marginBottom: '4px',
-                fontSize: '14px',
-                fontWeight: item.active ? '600' : '500',
-                color: item.active ? '#4f46e5' : '#64748b',
-                background: item.active ? 'rgba(99,102,241,0.08)' : 'transparent',
-                textDecoration: 'none',
-                transition: 'all 0.15s ease',
-                borderLeft: item.active ? '3px solid #4f46e5' : '3px solid transparent',
-              }}
-            >
-              {item.icon}
-              {item.label}
-            </Link>
-          ))}
-        </nav>
-
-        <div style={{ padding: '0 12px 12px', borderTop: '1px solid #f1f5f9', paddingTop: '12px' }}>
-          <button style={{
-            display: 'flex',
-            alignItems: 'center',
-            justifyContent: 'center',
-            gap: '8px',
-            width: '100%',
-            padding: '12px',
-            background: 'linear-gradient(135deg, #4f46e5 0%, #7c3aed 100%)',
-            color: '#fff',
-            border: 'none',
-            borderRadius: '12px',
-            fontSize: '14px',
-            fontWeight: '700',
-            cursor: 'pointer',
-          }}>
-            <Plus size={16} /> Add Expense
-          </button>
-        </div>
-      </div>
+      <DashboardSidebar navItems={navItems} activePath={location.pathname} />
 
       {/* Main Content */}
       <div style={{ flex: 1, display: 'flex', flexDirection: 'column' }}>

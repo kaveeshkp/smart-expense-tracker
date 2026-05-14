@@ -5,9 +5,6 @@ import {
   ArrowLeftRight,
   PieChart,
   BarChart2,
-  Settings,
-  HelpCircle,
-  Plus,
   Search,
   Bell,
   TrendingUp,
@@ -25,6 +22,7 @@ import {
   ChevronRight,
   CreditCard,
 } from 'lucide-react'
+import DashboardSidebar from '../../components/DashboardSidebar.tsx'
 
 // ── Types ──────────────────────────────────────────────────────────────────
 interface BudgetItem {
@@ -119,8 +117,9 @@ const Dashboard = () => {
     },
     // Sidebar
     sidebar: {
-      width: '210px',
-      minWidth: '210px',
+      width: '260px',
+      minWidth: '260px',
+      boxSizing: 'border-box',
       background: '#fff',
       borderRight: '1px solid #e2e8f0',
       display: 'flex',
@@ -590,40 +589,7 @@ const Dashboard = () => {
   return (
     <div style={s.shell}>
       {/* ── Sidebar ── */}
-      <aside style={s.sidebar}>
-        <div style={s.brand}>
-          <p style={s.brandName}>SmartExpenses</p>
-          <p style={s.brandSub}>Premium Account</p>
-        </div>
-
-        <nav style={s.nav}>
-          {navItems.map((item) => (
-            <Link
-              key={item.path}
-              to={item.path}
-              style={s.navItem(location.pathname === item.path)}
-            >
-              {item.icon}
-              {item.label}
-            </Link>
-          ))}
-        </nav>
-
-        <div style={s.navBottom}>
-          <button style={s.addBtn}>
-            <Plus size={16} />
-            Add Expense
-          </button>
-          <Link to="/settings" style={s.navItem(false)}>
-            <Settings size={18} />
-            Settings
-          </Link>
-          <Link to="/support" style={s.navItem(false)}>
-            <HelpCircle size={18} />
-            Support
-          </Link>
-        </div>
-      </aside>
+      <DashboardSidebar navItems={navItems} activePath={location.pathname} />
 
       {/* ── Main ── */}
       <main style={s.main}>
