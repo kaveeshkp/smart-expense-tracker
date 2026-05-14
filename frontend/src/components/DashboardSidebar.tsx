@@ -25,6 +25,7 @@ export default function DashboardSidebar({ navItems, activePath }: DashboardSide
         display: 'flex',
         flexDirection: 'column',
         padding: '24px 0 16px',
+        fontFamily: "'DM Sans', Inter, -apple-system, sans-serif",
         position: 'sticky',
         top: 0,
         height: '100vh',
