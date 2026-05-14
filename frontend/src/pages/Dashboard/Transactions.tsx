@@ -1,5 +1,5 @@
 import { useState, useMemo } from 'react'
-import { Link, useLocation } from 'react-router-dom'
+import { useLocation } from 'react-router-dom'
 import {
   Search, Filter, Download, ArrowUpRight, ArrowDownLeft,
   Coffee, Car, Zap, ShoppingBag, Utensils, Tv2, Heart,
@@ -8,6 +8,7 @@ import {
 } from 'lucide-react'
 import { useAuth } from '../../context/AuthContext'
 import DashboardSidebar from '../../components/DashboardSidebar'
+import DashboardHeader from '../../components/DashboardHeader.tsx'
 
 // ── Types ─────────────────────────────────────────────────────────────────
 type Status = 'completed' | 'processing' | 'failed'
@@ -171,9 +172,12 @@ export default function Transactions() {
       <DashboardSidebar navItems={navItems} activePath={location.pathname} />
 
       {/* Main Content */}
-      <div style={{ flex: 1, padding: '28px', fontFamily: "'DM Sans', sans-serif", overflowY: 'auto' }}>
-      <h1 style={{ fontSize: '22px', fontWeight: '800', color: '#0f172a', margin: '0 0 4px', letterSpacing: '-0.5px' }}>Transactions</h1>
-      <p style={{ fontSize: '13px', color: '#94a3b8', margin: '0 0 24px' }}>All your income and expense records in one place</p>
+      <div style={{ flex: 1, display: 'flex', flexDirection: 'column' }}>
+        <DashboardHeader
+          title="Transactions"
+          subtitle="All your income and expense records in one place"
+        />
+        <div style={{ flex: 1, padding: '28px', fontFamily: "'DM Sans', sans-serif", overflowY: 'auto' }}>
 
       {/* Summary */}
       <div style={s.summaryRow}>
@@ -188,6 +192,7 @@ export default function Transactions() {
         <div style={s.summaryCard('#f0fdf4')}>
           <p style={s.sumLabel()}>Total Income</p>
           <p style={{ ...s.sumValue(), color: '#16a34a' }}>+₹{totalIncome.toLocaleString()}</p>
+        </div>
         </div>
       </div>
 

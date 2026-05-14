@@ -1,8 +1,9 @@
 import { useState } from 'react'
-import { Link, useLocation } from 'react-router-dom'
+import { useLocation } from 'react-router-dom'
 import { LayoutDashboard, ArrowLeftRight, PieChart, BarChart2, Plus, Search, Bell, TrendingUp, TrendingDown, Download, Calendar } from 'lucide-react'
 import { useAuth } from '../../context/AuthContext'
 import DashboardSidebar from '../../components/DashboardSidebar'
+import DashboardHeader from '../../components/DashboardHeader.tsx'
 
 
 const Reports = () => {
@@ -38,6 +39,8 @@ const Reports = () => {
   const totalBudget = categoryExpenses.reduce((sum, cat) => sum + cat.budget, 0)
   const savingsRate = (((totalBudget - totalExpense) / totalBudget) * 100).toFixed(1)
 
+  const today = new Date().toLocaleDateString()
+
   return (
     <div style={{ display: 'flex', minHeight: '100vh', background: '#f1f5f9' }}>
       {/* Sidebar */}
@@ -46,34 +49,34 @@ const Reports = () => {
       {/* Main Content */}
       <div style={{ flex: 1, display: 'flex', flexDirection: 'column' }}>
         {/* Topbar */}
-        <div style={{ background: '#fff', borderBottom: '1px solid #e2e8f0', padding: '16px 28px', display: 'flex', alignItems: 'center', justifyContent: 'space-between', position: 'sticky', top: 0, zIndex: 10 }}>
-          <div>
-            <h2 style={{ fontSize: '20px', fontWeight: '700', color: '#0f172a', margin: 0 }}>Financial Reports</h2>
-            <p style={{ fontSize: '13px', color: '#94a3b8', margin: '2px 0 0' }}>{new Date().toLocaleDateString()}</p>
-          </div>
-          <div style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
-            <select
-              value={dateRange}
-              onChange={(e) => setDateRange(e.target.value)}
-              style={{
-                padding: '8px 12px',
-                background: '#f8fafc',
-                border: '1px solid #e2e8f0',
-                borderRadius: '10px',
-                fontSize: '13px',
-                cursor: 'pointer',
-              }}
-            >
-              <option value="week">This Week</option>
-              <option value="month">This Month</option>
-              <option value="quarter">This Quarter</option>
-              <option value="year">This Year</option>
-            </select>
-            <button style={{ background: '#f8fafc', border: '1px solid #e2e8f0', borderRadius: '10px', padding: '8px', cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center', color: '#64748b' }}>
-              <Download size={18} />
-            </button>
-          </div>
-        </div>
+        <DashboardHeader
+          title="Financial Reports"
+          subtitle={today}
+          right={
+            <>
+              <select
+                value={dateRange}
+                onChange={(e) => setDateRange(e.target.value)}
+                style={{
+                  padding: '8px 12px',
+                  background: '#f8fafc',
+                  border: '1px solid #e2e8f0',
+                  borderRadius: '10px',
+                  fontSize: '13px',
+                  cursor: 'pointer',
+                }}
+              >
+                <option value="week">This Week</option>
+                <option value="month">This Month</option>
+                <option value="quarter">This Quarter</option>
+                <option value="year">This Year</option>
+              </select>
+              <button style={{ background: '#f8fafc', border: '1px solid #e2e8f0', borderRadius: '10px', padding: '8px', cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center', color: '#64748b' }}>
+                <Download size={18} />
+              </button>
+            </>
+          }
+        />
 
         {/* Content */}
         <div style={{ padding: '24px 28px', flex: 1, overflowY: 'auto' }}>

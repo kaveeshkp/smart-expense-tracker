@@ -23,6 +23,7 @@ import {
   CreditCard,
 } from 'lucide-react'
 import DashboardSidebar from '../../components/DashboardSidebar.tsx'
+import DashboardHeader from '../../components/DashboardHeader.tsx'
 
 // ── Types ──────────────────────────────────────────────────────────────────
 interface BudgetItem {
@@ -594,28 +595,28 @@ const Dashboard = () => {
       {/* ── Main ── */}
       <main style={s.main}>
         {/* Topbar */}
-        <header style={s.topbar}>
-          <div style={s.topbarLeft}>
-            <h1 style={s.greeting}>Welcome back, AREA</h1>
-            <p style={s.dateLine}>{today}</p>
-          </div>
-          <div style={s.topbarRight}>
-            <div style={s.searchBox}>
-              <Search size={14} color="#94a3b8" />
-              <input
-                style={s.searchInput}
-                placeholder="Search transactions..."
-                value={search}
-                onChange={(e) => setSearch(e.target.value)}
-              />
+        <DashboardHeader
+          title="Welcome back, AREA"
+          subtitle={today}
+          right={
+            <div style={s.topbarRight}>
+              <div style={s.searchBox}>
+                <Search size={14} color="#94a3b8" />
+                <input
+                  style={s.searchInput}
+                  placeholder="Search transactions..."
+                  value={search}
+                  onChange={(e) => setSearch(e.target.value)}
+                />
+              </div>
+              <button style={s.iconBtn}>
+                <Bell size={18} />
+                <span style={s.notifDot} />
+              </button>
+              <div style={s.avatar}>AR</div>
             </div>
-            <button style={s.iconBtn}>
-              <Bell size={18} />
-              <span style={s.notifDot} />
-            </button>
-            <div style={s.avatar}>AR</div>
-          </div>
-        </header>
+          }
+        />
 
         {/* Content */}
         <div style={s.content}>

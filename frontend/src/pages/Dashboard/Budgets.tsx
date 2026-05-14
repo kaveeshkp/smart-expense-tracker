@@ -1,5 +1,5 @@
 import { useState } from 'react'
-import { Link, useLocation } from 'react-router-dom'
+import { useLocation } from 'react-router-dom'
 import {
   Plus, Utensils, Car, Zap, Tv2, Heart, ShoppingBag,
   Briefcase, Edit2, Trash2, TrendingUp, AlertTriangle, CheckCircle,
@@ -7,6 +7,7 @@ import {
 } from 'lucide-react'
 import { useAuth } from '../../context/AuthContext'
 import DashboardSidebar from '../../components/DashboardSidebar'
+import DashboardHeader from '../../components/DashboardHeader.tsx'
 
 // ── Types ─────────────────────────────────────────────────────────────────
 interface Budget {
@@ -179,14 +180,17 @@ export default function Budgets() {
       <DashboardSidebar navItems={navItems} activePath={location.pathname} />
 
       {/* Main Content */}
-      <div style={{ flex: 1, padding: '28px', fontFamily: "'DM Sans', sans-serif", overflowY: 'auto' }}>
-      <div style={s.topRow}>
-        <div>
-          <h1 style={s.heading}>Budgets</h1>
-          <p style={s.sub}>Track and manage your monthly spending limits</p>
-        </div>
-        <button style={s.addBtn} onClick={openAdd}><Plus size={16}/> New Budget</button>
-      </div>
+      <div style={{ flex: 1, display: 'flex', flexDirection: 'column' }}>
+        <DashboardHeader
+          title="Budgets"
+          subtitle="Track and manage your monthly spending limits"
+          right={
+            <button style={s.addBtn} onClick={openAdd}>
+              <Plus size={16} /> New Budget
+            </button>
+          }
+        />
+        <div style={{ flex: 1, padding: '28px', fontFamily: "'DM Sans', sans-serif", overflowY: 'auto' }}>
 
       {/* Summary */}
       <div style={s.summaryRow}>
@@ -205,6 +209,7 @@ export default function Budgets() {
         <div style={s.sCard(overBudget > 0 ? '#fff7f0' : '#f0fdf4')}>
           <p style={s.sLabel}>Over Budget</p>
           <p style={{ ...s.sValue, color: overBudget > 0 ? '#ef4444' : '#16a34a' }}>{overBudget} {overBudget === 1 ? 'category' : 'categories'}</p>
+        </div>
         </div>
       </div>
 
