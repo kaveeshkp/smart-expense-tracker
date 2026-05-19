@@ -77,12 +77,10 @@ const Reports = () => {
                   try {
                     const { start, end } = getRangeDates(dateRange)
                     const fmt = 'csv'
-                    const resp = await fetch(`${import.meta.env.VITE_API_BASE_URL || 'http://localhost:8080'}/api/reports/financial?format=${fmt}&start=${start}&end=${end}`, {
-                      headers: { Authorization: `Bearer ${localStorage.getItem('token')}` },
-                    })
-                    if (!resp.ok) throw new Error(await resp.text())
-                    const blob = await resp.blob()
-                    const cd = resp.headers.get('content-disposition') || ''
+                    const API = (await import('../../api/api')).default
+                    const resp = await API.get(`/reports/financial?format=${fmt}&start=${start}&end=${end}`, { responseType: 'blob' })
+                    const blob = resp.data as Blob
+                    const cd = resp.headers['content-disposition'] || ''
                     const match = /filename="?(.*)"?/.exec(cd)
                     const filename = match ? match[1] : `financial-report-${start}_to_${end}.csv`
                     const url = window.URL.createObjectURL(blob)
@@ -93,8 +91,8 @@ const Reports = () => {
                     a.click()
                     a.remove()
                     window.URL.revokeObjectURL(url)
-                  } catch (err) {
-                    alert(String(err))
+                  } catch (err: any) {
+                    alert(err?.response?.data || String(err))
                   }
                 }}
               >

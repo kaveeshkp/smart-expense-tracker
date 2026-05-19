@@ -1,6 +1,8 @@
 import { Link } from 'react-router-dom'
 import { HelpCircle, Plus, Settings } from 'lucide-react'
 import type { ReactNode } from 'react'
+import { useState } from 'react'
+import AddExpenseForm from './AddExpenseForm'
 
 type NavItem = {
   label: string
@@ -14,6 +16,8 @@ type DashboardSidebarProps = {
 }
 
 export default function DashboardSidebar({ navItems, activePath }: DashboardSidebarProps) {
+  const [showAdd, setShowAdd] = useState(false)
+
   return (
     <aside
       style={{
@@ -87,6 +91,7 @@ export default function DashboardSidebar({ navItems, activePath }: DashboardSide
             cursor: 'pointer',
             marginBottom: '12px',
           }}
+          onClick={() => setShowAdd(true)}
         >
           <Plus size={16} /> Add Expense
         </button>
@@ -128,6 +133,13 @@ export default function DashboardSidebar({ navItems, activePath }: DashboardSide
           Support
         </Link>
       </div>
+      {showAdd && (
+        <div style={{ position: 'fixed', inset: 0, background: 'rgba(2,6,23,0.5)', display: 'flex', alignItems: 'center', justifyContent: 'center', zIndex: 60 }}>
+          <div style={{ background: '#fff', padding: 20, borderRadius: 12, boxShadow: '0 10px 30px rgba(2,6,23,0.2)' }}>
+            <AddExpenseForm onClose={() => setShowAdd(false)} />
+          </div>
+        </div>
+      )}
     </aside>
   )
 }
