@@ -1,11 +1,13 @@
 package com.smart.expense_tracker.repository;
 
+import java.util.List;
+
+import org.springframework.data.jpa.repository.JpaRepository;
+
 import com.smart.expense_tracker.entity.Expense;
 import com.smart.expense_tracker.entity.User;
-import org.springframework.data.jpa.repository.JpaRepository;
-import java.time.LocalDate;
-import java.util.List;
 
 public interface ExpenseRepository extends JpaRepository<Expense, Long> {
     List<Expense> findByUserOrderByDateDesc(User user);
+    List<Expense> findByUserAndDateBetweenOrderByDateDesc(User user, java.time.LocalDate start, java.time.LocalDate end);
 }

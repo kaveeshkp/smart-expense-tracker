@@ -71,7 +71,33 @@ const Reports = () => {
                 <option value="quarter">This Quarter</option>
                 <option value="year">This Year</option>
               </select>
-              <button style={{ background: '#f8fafc', border: '1px solid #e2e8f0', borderRadius: '10px', padding: '8px', cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center', color: '#64748b' }}>
+              <button
+                style={{ background: '#f8fafc', border: '1px solid #e2e8f0', borderRadius: '10px', padding: '8px', cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center', color: '#64748b' }}
+                onClick={async () => {
+                  try {
+                    const { start, end } = getRangeDates(dateRange)
+                    const fmt = 'csv'
+                    const resp = await fetch(`${import.meta.env.VITE_API_BASE_URL || 'http://localhost:8080'}/api/reports/financial?format=${fmt}&start=${start}&end=${end}`, {
+                      headers: { Authorization: `Bearer ${localStorage.getItem('token')}` },
+                    })
+                    if (!resp.ok) throw new Error(await resp.text())
+                    const blob = await resp.blob()
+                    const cd = resp.headers.get('content-disposition') || ''
+                    const match = /filename="?(.*)"?/.exec(cd)
+                    const filename = match ? match[1] : `financial-report-${start}_to_${end}.csv`
+                    const url = window.URL.createObjectURL(blob)
+                    const a = document.createElement('a')
+                    a.href = url
+                    a.download = filename
+                    document.body.appendChild(a)
+                    a.click()
+                    a.remove()
+                    window.URL.revokeObjectURL(url)
+                  } catch (err) {
+                    alert(String(err))
+                  }
+                }}
+              >
                 <Download size={18} />
               </button>
             </>
@@ -155,3 +181,27 @@ const Reports = () => {
 }
 
 export default Reports
+
+function getRangeDates(range: string) {
+  const now = new Date()
+  let start = new Date()
+  let end = new Date()
+  switch (range) {
+    case 'week':
+      start.setDate(now.getDate() - 7)
+      break
+    case 'month':
+      start.setMonth(now.getMonth() - 1)
+      break
+    case 'quarter':
+      start.setMonth(now.getMonth() - 3)
+      break
+    case 'year':
+      start.setFullYear(now.getFullYear() - 1)
+      break
+    default:
+      start.setMonth(now.getMonth() - 1)
+  }
+  const fmt = (d: Date) => d.toISOString().slice(0, 10)
+  return { start: fmt(start), end: fmt(end) }
+}
