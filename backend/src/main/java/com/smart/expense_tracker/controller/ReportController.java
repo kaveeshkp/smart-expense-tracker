@@ -18,7 +18,7 @@ import com.smart.expense_tracker.repository.UserRepository;
 import com.smart.expense_tracker.service.ReportService;
 
 @RestController
-@RequestMapping("/api/reports")
+@RequestMapping("/reports")
 public class ReportController {
 
     private final ReportService reportService;

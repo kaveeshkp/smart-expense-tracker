@@ -64,7 +64,7 @@ class ExpenseControllerTest {
         req.setAmount(new BigDecimal("12.34"));
         req.setDate(LocalDate.now());
 
-        mockMvc.perform(post("/api/expenses")
+        mockMvc.perform(post("/expenses")
                 .contentType(MediaType.APPLICATION_JSON)
                 .content(objectMapper.writeValueAsString(req)))
                 .andExpect(status().isCreated());

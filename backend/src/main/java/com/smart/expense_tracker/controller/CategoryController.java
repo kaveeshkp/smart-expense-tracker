@@ -18,7 +18,7 @@ import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.validation.Valid;
 
 @RestController
-@RequestMapping("/api/categories")
+    @RequestMapping("/categories")
 @Tag(name = "Categories", description = "Category lookup and management")
 public class CategoryController {
 

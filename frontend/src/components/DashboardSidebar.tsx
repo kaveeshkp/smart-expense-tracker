@@ -2,6 +2,7 @@ import { Link } from 'react-router-dom'
 import { HelpCircle, Plus, Settings } from 'lucide-react'
 import type { ReactNode } from 'react'
 import { useState } from 'react'
+import { useAuth } from '../context/AuthContext'
 import AddExpenseForm from './AddExpenseForm'
 
 type NavItem = {
@@ -17,6 +18,7 @@ type DashboardSidebarProps = {
 
 export default function DashboardSidebar({ navItems, activePath }: DashboardSidebarProps) {
   const [showAdd, setShowAdd] = useState(false)
+  const { logout } = useAuth()
 
   return (
     <aside
@@ -132,6 +134,26 @@ export default function DashboardSidebar({ navItems, activePath }: DashboardSide
           <HelpCircle size={18} />
           Support
         </Link>
+
+        <button
+          onClick={() => logout()}
+          style={{
+            display: 'flex',
+            alignItems: 'center',
+            gap: '10px',
+            padding: '10px 12px',
+            borderRadius: '10px',
+            fontSize: '14px',
+            fontWeight: '600',
+            color: '#ef4444',
+            background: 'transparent',
+            border: 'none',
+            cursor: 'pointer',
+            marginTop: '8px',
+          }}
+        >
+          Logout
+        </button>
       </div>
       {showAdd && (
         <div style={{ position: 'fixed', inset: 0, background: 'rgba(2,6,23,0.5)', display: 'flex', alignItems: 'center', justifyContent: 'center', zIndex: 60 }}>

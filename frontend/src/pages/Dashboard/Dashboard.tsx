@@ -24,6 +24,7 @@ import {
 } from 'lucide-react'
 import DashboardSidebar from '../../components/DashboardSidebar.tsx'
 import DashboardHeader from '../../components/DashboardHeader.tsx'
+import { useAuth } from '../../context/AuthContext'
 
 // ── Types ──────────────────────────────────────────────────────────────────
 interface BudgetItem {
@@ -107,6 +108,10 @@ const navItems = [
 const Dashboard = () => {
   const location = useLocation()
   const [search, setSearch] = useState('')
+  const { logout, user } = useAuth()
+  const initials = user?.fullName
+    ? user.fullName.split(' ').map((n) => n[0]).slice(0, 2).join('').toUpperCase()
+    : 'AR'
 
   const s: Record<string, React.CSSProperties> = {
     // Layout
@@ -613,7 +618,21 @@ const Dashboard = () => {
                 <Bell size={18} />
                 <span style={s.notifDot} />
               </button>
-              <div style={s.avatar}>AR</div>
+              <div style={s.avatar}>{initials}</div>
+              <button
+                onClick={() => logout()}
+                style={{
+                  padding: '8px 12px',
+                  marginLeft: 8,
+                  borderRadius: 10,
+                  border: '1px solid #e2e8f0',
+                  background: '#fff',
+                  cursor: 'pointer',
+                  fontWeight: 600,
+                }}
+              >
+                Logout
+              </button>
             </div>
           }
         />
