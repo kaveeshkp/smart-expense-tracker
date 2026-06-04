@@ -15,3 +15,11 @@ ReactDOM.createRoot(document.getElementById('root')!).render(
     </QueryClientProvider>
   </React.StrictMode>,
 )
+
+if ('serviceWorker' in navigator) {
+  window.addEventListener('load', () => {
+    navigator.serviceWorker.register('/src/sw.ts')
+      .then(reg => console.log('ServiceWorker registered successfully:', reg.scope))
+      .catch(err => console.log('ServiceWorker registration failed:', err));
+  });
+}

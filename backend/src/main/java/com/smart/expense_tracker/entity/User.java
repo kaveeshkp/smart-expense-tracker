@@ -21,6 +21,16 @@ public class User {
 
     private LocalDateTime createdAt = LocalDateTime.now();
 
+    @Column(length = 3)
+    private String preferredCurrency = "USD";
+
+    @Column(length = 50)
+    private String timezone = "UTC";
+
+    private String profileImageUrl;
+
+    private Boolean emailVerified = false;
+
     public User() {}
 
     public User(Long id, String fullName, String email, String password, LocalDateTime createdAt) {
@@ -69,5 +79,37 @@ public class User {
 
     public void setCreatedAt(LocalDateTime createdAt) {
         this.createdAt = createdAt;
+    }
+
+    public String getPreferredCurrency() {
+        return preferredCurrency;
+    }
+
+    public void setPreferredCurrency(String preferredCurrency) {
+        this.preferredCurrency = preferredCurrency;
+    }
+
+    public String getTimezone() {
+        return timezone;
+    }
+
+    public void setTimezone(String timezone) {
+        this.timezone = timezone;
+    }
+
+    public String getProfileImageUrl() {
+        return profileImageUrl;
+    }
+
+    public void setProfileImageUrl(String profileImageUrl) {
+        this.profileImageUrl = profileImageUrl;
+    }
+
+    public Boolean getEmailVerified() {
+        return emailVerified;
+    }
+
+    public void setEmailVerified(Boolean emailVerified) {
+        this.emailVerified = emailVerified;
     }
 }

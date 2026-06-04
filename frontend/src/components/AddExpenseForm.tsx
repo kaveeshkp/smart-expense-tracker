@@ -1,111 +1,203 @@
-import { useState, useEffect } from 'react'
-import API from '../api/api'
+import React, { useState, useEffect } from 'react';
+import { useCategories, useCreateCategory } from '../hooks/useCategories';
+import { useCreateExpense, useUpdateExpense } from '../hooks/useExpenses';
+import type { Expense } from '../types';
+import Modal from './ui/Modal';
+import { Plus, Loader2 } from 'lucide-react';
+import toast from 'react-hot-toast';
 
-type Props = {
-  onClose: () => void
+interface AddExpenseFormProps {
+  onClose: () => void;
+  expense?: Expense; // If provided, the form will act as an "Edit" form
 }
 
-export default function AddExpenseForm({ onClose }: Props) {
-  const [title, setTitle] = useState('')
-  const [amount, setAmount] = useState('')
-  const [date, setDate] = useState(new Date().toISOString().slice(0, 10))
-  const [categories, setCategories] = useState<Array<{id:number,name:string}>>([])
-  const [categoryId, setCategoryId] = useState<number | null>(null)
-  const [notes, setNotes] = useState('')
-  const [loading, setLoading] = useState(false)
+export default function AddExpenseForm({ onClose, expense }: AddExpenseFormProps) {
+  const isEdit = !!expense;
+  
+  const [title, setTitle] = useState(expense?.title || '');
+  const [amount, setAmount] = useState(expense?.amount ? String(expense.amount) : '');
+  const [date, setDate] = useState(expense?.date ? expense.date.slice(0, 10) : new Date().toISOString().slice(0, 10));
+  const [categoryId, setCategoryId] = useState<number | null>(expense?.category?.id || null);
+  const [notes, setNotes] = useState(expense?.notes || '');
 
-  async function submit(e: React.FormEvent) {
-    e.preventDefault()
-    if (!title.trim()) return alert('Title is required')
-    const amt = parseFloat(amount)
-    if (isNaN(amt) || amt <= 0) return alert('Amount must be greater than 0')
-    setLoading(true)
-    try {
-      await API.post('/expenses', {
-        title: title.trim(),
-        amount: amt,
-        date,
-        categoryId: categoryId,
-        notes: notes || null,
-      })
-      // notify app to refresh lists
-      window.dispatchEvent(new CustomEvent('expense:created'))
-      onClose()
-      alert('Expense added')
-    } catch (err: any) {
-      alert(err?.response?.data?.message || String(err))
-    } finally {
-      setLoading(false)
+  const { data: categories, isLoading: categoriesLoading } = useCategories();
+  const createCategoryMutation = useCreateCategory();
+  
+  const createExpenseMutation = useCreateExpense();
+  const updateExpenseMutation = useUpdateExpense();
+
+  const isSaving = createExpenseMutation.isPending || updateExpenseMutation.isPending;
+
+  const handleSubmit = (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!title.trim()) {
+      toast.error('Title is required');
+      return;
     }
-  }
-
-  useEffect(() => {
-    let mounted = true
-    API.get('/categories')
-      .then(res => {
-        if (!mounted) return
-        setCategories(res.data || [])
-      })
-      .catch(() => {})
-    return () => { mounted = false }
-  }, [])
-
-  async function createCategory() {
-    const name = prompt('Enter new category name')
-    if (!name) return
-    try {
-      const res = await API.post('/categories', { name })
-      const cat = res.data
-      setCategories(prev => [...prev, cat])
-      setCategoryId(cat.id)
-    } catch (err: any) {
-      alert(err?.response?.data?.message || String(err))
+    const parsedAmount = parseFloat(amount);
+    if (isNaN(parsedAmount) || parsedAmount <= 0) {
+      toast.error('Amount must be greater than 0');
+      return;
     }
-  }
+
+    const payload = {
+      title: title.trim(),
+      amount: parsedAmount,
+      date,
+      categoryId: categoryId || undefined,
+      notes: notes.trim() || undefined,
+      currency: expense?.currency || 'USD'
+    };
+
+    if (isEdit && expense) {
+      updateExpenseMutation.mutate(
+        { id: expense.id, data: payload },
+        {
+          onSuccess: () => {
+            onClose();
+          }
+        }
+      );
+    } else {
+      createExpenseMutation.mutate(payload, {
+        onSuccess: () => {
+          onClose();
+        }
+      });
+    }
+  };
+
+  const handleCreateCategory = () => {
+    const name = prompt('Enter new category name:');
+    if (!name || !name.trim()) return;
+
+    createCategoryMutation.mutate(
+      { name: name.trim() },
+      {
+        onSuccess: (newCat) => {
+          setCategoryId(newCat.id);
+        }
+      }
+    );
+  };
 
   return (
-    <form onSubmit={submit} style={{ width: 520 }}>
-      <h3 style={{ margin: '0 0 12px' }}>Add Expense</h3>
-      <div style={{ display: 'grid', gridTemplateColumns: '1fr 160px', gap: 12 }}>
-        <div>
-          <label style={{ display: 'block', fontSize: 12, color: '#64748b', marginBottom: 6 }}>Title</label>
-          <input value={title} onChange={(e) => setTitle(e.target.value)} style={{ width: '100%', padding: 10, borderRadius: 8, border: '1px solid #e2e8f0' }} />
+    <Modal 
+      isOpen={true} 
+      onClose={onClose} 
+      title={isEdit ? 'Edit Transaction' : 'Add Transaction'}
+    >
+      <form onSubmit={handleSubmit}>
+        <div className="input-group">
+          <label className="input-label" htmlFor="title">Title</label>
+          <input
+            id="title"
+            className="input"
+            type="text"
+            placeholder="e.g. Starbucks, Rent, Taxi"
+            value={title}
+            onChange={(e) => setTitle(e.target.value)}
+            disabled={isSaving}
+          />
         </div>
-        <div>
-          <label style={{ display: 'block', fontSize: 12, color: '#64748b', marginBottom: 6 }}>Amount</label>
-          <input value={amount} onChange={(e) => setAmount(e.target.value)} type="number" step="0.01" style={{ width: '100%', padding: 10, borderRadius: 8, border: '1px solid #e2e8f0' }} />
-        </div>
-        <div>
-          <label style={{ display: 'block', fontSize: 12, color: '#64748b', marginBottom: 6 }}>Date</label>
-          <input value={date} onChange={(e) => setDate(e.target.value)} type="date" style={{ width: '100%', padding: 10, borderRadius: 8, border: '1px solid #e2e8f0' }} />
-        </div>
-        <div>
-          <label style={{ display: 'block', fontSize: 12, color: '#64748b', marginBottom: 6 }}>Category</label>
-          <div style={{ display: 'flex', gap: 8 }}>
-            <select value={categoryId ?? ''} onChange={(e) => setCategoryId(e.target.value ? Number(e.target.value) : null)} style={{ flex: 1, padding: 10, borderRadius: 8, border: '1px solid #e2e8f0' }}>
-              <option value="">Uncategorized</option>
-              {categories.map(c => (
-                <option key={c.id} value={c.id}>{c.name}</option>
-              ))}
-            </select>
-            <button type="button" onClick={createCategory} style={{ padding: '8px 10px', borderRadius: 8, border: '1px solid #e2e8f0', background: '#fff' }}>New</button>
+
+        <div className="grid-2">
+          <div className="input-group">
+            <label className="input-label" htmlFor="amount">Amount ($)</label>
+            <input
+              id="amount"
+              className="input"
+              type="number"
+              step="0.01"
+              placeholder="0.00"
+              value={amount}
+              onChange={(e) => setAmount(e.target.value)}
+              disabled={isSaving}
+            />
+          </div>
+
+          <div className="input-group">
+            <label className="input-label" htmlFor="date">Date</label>
+            <input
+              id="date"
+              className="input"
+              type="date"
+              value={date}
+              onChange={(e) => setDate(e.target.value)}
+              disabled={isSaving}
+            />
           </div>
         </div>
-      </div>
 
-      <div style={{ marginTop: 12 }}>
-        <label style={{ display: 'block', fontSize: 12, color: '#64748b', marginBottom: 6 }}>Notes</label>
-        <textarea value={notes} onChange={(e) => setNotes(e.target.value)} rows={3} style={{ width: '100%', padding: 10, borderRadius: 8, border: '1px solid #e2e8f0' }} />
-      </div>
+        <div className="input-group">
+          <label className="input-label" htmlFor="category">Category</label>
+          <div className="flex-gap-sm">
+            <select
+              id="category"
+              className="select"
+              value={categoryId || ''}
+              onChange={(e) => setCategoryId(e.target.value ? Number(e.target.value) : null)}
+              disabled={isSaving || categoriesLoading}
+              style={{ flex: 1 }}
+            >
+              <option value="">Uncategorized (Auto AI Categorize)</option>
+              {categories?.map((cat) => (
+                <option key={cat.id} value={cat.id}>
+                  {cat.name}
+                </option>
+              ))}
+            </select>
+            <button
+              type="button"
+              className="btn"
+              onClick={handleCreateCategory}
+              disabled={isSaving || createCategoryMutation.isPending}
+              style={{ padding: '12px' }}
+              title="Create New Category"
+            >
+              {createCategoryMutation.isPending ? <Loader2 className="animate-spin" size={16} /> : <Plus size={16} />}
+            </button>
+          </div>
+        </div>
 
-      <div style={{ display: 'flex', gap: 8, justifyContent: 'flex-end', marginTop: 16 }}>
-        <button type="button" onClick={onClose} style={{ padding: '8px 12px', borderRadius: 8, border: '1px solid #e2e8f0', background: '#fff' }} disabled={loading}>
-          Cancel
-        </button>
-        <button type="submit" style={{ padding: '8px 14px', borderRadius: 8, border: 'none', background: 'linear-gradient(135deg,#4f46e5,#7c3aed)', color: '#fff' }} disabled={loading}>
-          {loading ? 'Saving...' : 'Add Expense'}
-        </button>
-      </div>
-    </form>
-  )
+        <div className="input-group">
+          <label className="input-label" htmlFor="notes">Notes</label>
+          <textarea
+            id="notes"
+            className="textarea"
+            placeholder="Add additional details..."
+            value={notes}
+            onChange={(e) => setNotes(e.target.value)}
+            disabled={isSaving}
+            rows={3}
+          />
+        </div>
+
+        <div className="modal-footer" style={{ padding: 'var(--space-md) 0 0 0', borderTop: 'none' }}>
+          <button
+            type="button"
+            className="btn btn-secondary"
+            onClick={onClose}
+            disabled={isSaving}
+          >
+            Cancel
+          </button>
+          <button
+            type="submit"
+            className="btn btn-primary"
+            disabled={isSaving}
+          >
+            {isSaving ? (
+              <>
+                <Loader2 className="animate-spin" size={16} />
+                Saving...
+              </>
+            ) : (
+              isEdit ? 'Save Changes' : 'Add Expense'
+            )}
+          </button>
+        </div>
+      </form>
+    </Modal>
+  );
 }

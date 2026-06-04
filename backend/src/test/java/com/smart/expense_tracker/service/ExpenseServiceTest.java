@@ -36,7 +36,8 @@ class ExpenseServiceTest {
         ArgumentCaptor<Expense> cap = ArgumentCaptor.forClass(Expense.class);
         Mockito.when(repo.save(cap.capture())).thenAnswer(i -> i.getArgument(0));
 
-        ExpenseService svc = new ExpenseService(repo, crepo);
+        AiCategorizationService aiSvc = Mockito.mock(AiCategorizationService.class);
+        ExpenseService svc = new ExpenseService(repo, crepo, aiSvc);
 
         CreateExpenseRequest req = new CreateExpenseRequest();
         req.setTitle("Dinner");

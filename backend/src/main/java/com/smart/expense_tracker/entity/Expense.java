@@ -42,6 +42,11 @@ public class Expense {
 
     private Boolean aiCategorized = false;
 
+    @Column(length = 3)
+    private String currency = "USD";
+
+    private String receiptUrl;
+
     private LocalDateTime createdAt = LocalDateTime.now();
 
     public Expense() {}
@@ -120,6 +125,22 @@ public class Expense {
 
     public void setAiCategorized(Boolean aiCategorized) {
         this.aiCategorized = aiCategorized;
+    }
+
+    public String getCurrency() {
+        return currency;
+    }
+
+    public void setCurrency(String currency) {
+        this.currency = currency;
+    }
+
+    public String getReceiptUrl() {
+        return receiptUrl;
+    }
+
+    public void setReceiptUrl(String receiptUrl) {
+        this.receiptUrl = receiptUrl;
     }
 
     public LocalDateTime getCreatedAt() {

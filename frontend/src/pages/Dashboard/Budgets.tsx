@@ -1,278 +1,373 @@
-import { useState } from 'react'
-import { useLocation } from 'react-router-dom'
-import {
-  Plus, Utensils, Car, Zap, Tv2, Heart, ShoppingBag,
-  Briefcase, Edit2, Trash2, TrendingUp, AlertTriangle, CheckCircle,
-  X, Save, LayoutDashboard, ArrowLeftRight, PieChart, BarChart2,
-} from 'lucide-react'
-import { useAuth } from '../../context/AuthContext'
-import DashboardSidebar from '../../components/DashboardSidebar'
-import DashboardHeader from '../../components/DashboardHeader.tsx'
+import { useState } from 'react';
+import { useBudgets, useBudgetStatuses, useCreateBudget, useUpdateBudget, useDeleteBudget } from '../../hooks/useBudgets';
+import { useCategories } from '../../hooks/useCategories';
+import PageLayout from '../../components/ui/PageLayout';
+import BudgetProgressChart from '../../components/charts/BudgetProgressChart';
+import Modal from '../../components/ui/Modal';
+import ConfirmDialog from '../../components/ui/ConfirmDialog';
+import type { BudgetStatus, Budget } from '../../types';
+import { PiggyBank, Plus, Edit2, Trash2, Calendar, Folder } from 'lucide-react';
+import { format } from 'date-fns';
+import toast from 'react-hot-toast';
 
-// ── Types ─────────────────────────────────────────────────────────────────
-interface Budget {
-  id: number
-  category: string
-  icon: React.ReactNode
-  iconBg: string
-  iconColor: string
-  limit: number
-  spent: number
-  color: string
-}
-
-// ── Data ──────────────────────────────────────────────────────────────────
-const INITIAL_BUDGETS: Budget[] = [
-  { id: 1, category: 'Food',          icon: <Utensils size={18}/>,   iconBg: '#ede9fe', iconColor: '#7c3aed', limit: 4000,  spent: 3200,  color: '#6366f1' },
-  { id: 2, category: 'Transport',     icon: <Car size={18}/>,         iconBg: '#ede9fe', iconColor: '#7c3aed', limit: 2500,  spent: 1800,  color: '#6366f1' },
-  { id: 3, category: 'Bills',         icon: <Zap size={18}/>,         iconBg: '#fef3c7', iconColor: '#d97706', limit: 5000,  spent: 4500,  color: '#ef4444' },
-  { id: 4, category: 'Entertainment', icon: <Tv2 size={18}/>,         iconBg: '#fce7f3', iconColor: '#be185d', limit: 2000,  spent: 1200,  color: '#6366f1' },
-  { id: 5, category: 'Health',        icon: <Heart size={18}/>,       iconBg: '#fce7f3', iconColor: '#be185d', limit: 3000,  spent: 1200,  color: '#6366f1' },
-  { id: 6, category: 'Shopping',      icon: <ShoppingBag size={18}/>, iconBg: '#ede9fe', iconColor: '#7c3aed', limit: 5000,  spent: 2450,  color: '#6366f1' },
-]
-
-const CATEGORY_OPTIONS = ['Food','Transport','Bills','Entertainment','Health','Shopping','Travel','Education','Other']
-
-// ── Helpers ───────────────────────────────────────────────────────────────
-function pct(spent: number, limit: number) { return Math.min(100, Math.round((spent / limit) * 100)) }
-function barColor(p: number) { return p >= 90 ? '#ef4444' : p >= 75 ? '#f59e0b' : '#6366f1' }
-function statusLabel(p: number) {
-  if (p >= 90) return { text: 'Critical', color: '#dc2626', bg: '#fee2e2', icon: <AlertTriangle size={12}/> }
-  if (p >= 75) return { text: 'Warning',  color: '#d97706', bg: '#fef3c7', icon: <AlertTriangle size={12}/> }
-  return { text: 'On Track', color: '#16a34a', bg: '#dcfce7', icon: <CheckCircle size={12}/> }
-}
-
-// ── Component ─────────────────────────────────────────────────────────────
 export default function Budgets() {
-  const [budgets, setBudgets] = useState<Budget[]>(INITIAL_BUDGETS)
-  const [showModal, setShowModal] = useState(false)
-  const [editId, setEditId] = useState<number | null>(null)
-  const [form, setForm] = useState({ category: 'Food', limit: '' })
+  const [showForm, setShowForm] = useState(false);
+  const [editingBudget, setEditingBudget] = useState<Budget | null>(null);
+  const [deletingBudgetId, setDeletingBudgetId] = useState<number | null>(null);
 
-  const { user } = useAuth()
-  const location = useLocation()
+  // Fetch data
+  const { data: budgets, isLoading: budgetsLoading } = useBudgets();
+  const { data: budgetStatuses, isLoading: statusLoading } = useBudgetStatuses();
+  const { data: categories } = useCategories();
 
-  const navItems = [
-    { label: 'Dashboard', icon: <LayoutDashboard size={18} />, path: '/' },
-    { label: 'Transactions', icon: <ArrowLeftRight size={18} />, path: '/transactions' },
-    { label: 'Budgets', icon: <PieChart size={18} />, path: '/budgets' },
-    { label: 'Reports', icon: <BarChart2 size={18} />, path: '/reports' },
-  ]
+  const createBudgetMutation = useCreateBudget();
+  const updateBudgetMutation = useUpdateBudget();
+  const deleteBudgetMutation = useDeleteBudget();
 
-  const totalLimit = budgets.reduce((a, b) => a + b.limit, 0)
-  const totalSpent = budgets.reduce((a, b) => a + b.spent, 0)
-  const overBudget = budgets.filter(b => pct(b.spent, b.limit) >= 90).length
+  const isLoading = budgetsLoading || statusLoading;
 
-  function openAdd() { setEditId(null); setForm({ category: 'Food', limit: '' }); setShowModal(true) }
-  function openEdit(b: Budget) { setEditId(b.id); setForm({ category: b.category, limit: String(b.limit) }); setShowModal(true) }
-  function deleteB(id: number) { setBudgets(prev => prev.filter(b => b.id !== id)) }
+  const handleEdit = (budget: Budget) => {
+    setEditingBudget(budget);
+    setShowForm(true);
+  };
 
-  function saveForm() {
-    if (!form.limit || isNaN(Number(form.limit))) return
-    if (editId !== null) {
-      setBudgets(prev => prev.map(b => b.id === editId ? { ...b, category: form.category, limit: Number(form.limit) } : b))
-    } else {
-      const newB: Budget = {
-        id: Date.now(), category: form.category,
-        icon: <ShoppingBag size={18}/>, iconBg: '#ede9fe', iconColor: '#7c3aed',
-        limit: Number(form.limit), spent: 0, color: '#6366f1',
-      }
-      setBudgets(prev => [...prev, newB])
+  const handleDeleteClick = (id: number) => {
+    setDeletingBudgetId(id);
+  };
+
+  const handleDeleteConfirm = () => {
+    if (deletingBudgetId) {
+      deleteBudgetMutation.mutate(deletingBudgetId, {
+        onSuccess: () => setDeletingBudgetId(null),
+      });
     }
-    setShowModal(false)
-  }
+  };
 
-  const s: Record<string, React.CSSProperties> = {
-    page:    { padding: '28px', background: '#f1f5f9', minHeight: '100vh', fontFamily: "'DM Sans', sans-serif", position: 'relative' as const },
-    heading: { fontSize: '22px', fontWeight: '800', color: '#0f172a', margin: '0 0 4px', letterSpacing: '-0.5px' },
-    sub:     { fontSize: '13px', color: '#94a3b8', margin: '0 0 24px' },
-    topRow:  { display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', marginBottom: '24px' },
+  const formatCurrency = (val: number) => {
+    return new Intl.NumberFormat('en-US', {
+      style: 'currency',
+      currency: 'USD',
+    }).format(val);
+  };
 
-    summaryRow: { display: 'grid', gridTemplateColumns: 'repeat(4,1fr)', gap: '14px', marginBottom: '24px' },
-    sCard: (accent?: string): React.CSSProperties => ({
-      background: accent || '#fff', border: '1px solid #e2e8f0',
-      borderRadius: '14px', padding: '16px 18px',
-    }),
-    sLabel: { fontSize: '11px', fontWeight: '700', color: '#94a3b8', letterSpacing: '0.4px', textTransform: 'uppercase' as const, margin: '0 0 6px' },
-    sValue: { fontSize: '22px', fontWeight: '800', color: '#0f172a', margin: 0, letterSpacing: '-0.5px' },
-
-    addBtn: {
-      display: 'flex', alignItems: 'center', gap: '6px',
-      padding: '10px 18px', background: 'linear-gradient(135deg,#4f46e5,#7c3aed)',
-      color: '#fff', border: 'none', borderRadius: '10px',
-      fontSize: '14px', fontWeight: '700', cursor: 'pointer',
-      boxShadow: '0 4px 14px rgba(79,70,229,0.3)',
-    },
-
-    grid: { display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(300px,1fr))', gap: '16px' },
-    card: { background: '#fff', border: '1px solid #e2e8f0', borderRadius: '16px', padding: '22px' },
-
-    cardTop: { display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: '18px' },
-    catWrap: { display: 'flex', alignItems: 'center', gap: '12px' },
-    iconBox: (bg: string, color: string): React.CSSProperties => ({
-      width: '42px', height: '42px', borderRadius: '12px',
-      background: bg, color, display: 'flex', alignItems: 'center', justifyContent: 'center',
-    }),
-    catName: { fontSize: '16px', fontWeight: '700', color: '#0f172a', margin: 0 },
-
-    actions: { display: 'flex', gap: '6px' },
-    actionBtn: (danger?: boolean): React.CSSProperties => ({
-      width: '30px', height: '30px', border: '1px solid #e2e8f0',
-      borderRadius: '8px', background: '#f8fafc', display: 'flex', alignItems: 'center',
-      justifyContent: 'center', cursor: 'pointer',
-      color: danger ? '#ef4444' : '#64748b',
-    }),
-
-    amounts: { display: 'flex', justifyContent: 'space-between', marginBottom: '8px', fontSize: '13px' },
-    spent:   { fontWeight: '700', color: '#0f172a' },
-    limit:   { color: '#94a3b8' },
-
-    trackBg: { height: '8px', background: '#f1f5f9', borderRadius: '99px', overflow: 'hidden' as const, marginBottom: '10px' },
-    trackFill: (p: number, color: string): React.CSSProperties => ({
-      height: '100%', width: `${p}%`, background: color, borderRadius: '99px', transition: 'width 0.5s ease',
-    }),
-
-    cardBottom: { display: 'flex', alignItems: 'center', justifyContent: 'space-between' },
-    pctText: { fontSize: '12px', color: '#64748b', fontWeight: '500' },
-    statusBadge: (color: string, bg: string): React.CSSProperties => ({
-      display: 'inline-flex', alignItems: 'center', gap: '4px',
-      padding: '3px 10px', borderRadius: '20px', fontSize: '11px', fontWeight: '600',
-      color, background: bg,
-    }),
-    remaining: { fontSize: '11px', color: '#94a3b8', marginTop: '6px' },
-
-    // Modal
-    overlay: {
-      position: 'fixed' as const, inset: 0, background: 'rgba(15,23,42,0.5)',
-      display: 'flex', alignItems: 'center', justifyContent: 'center', zIndex: 50,
-    },
-    modal: {
-      background: '#fff', borderRadius: '20px', padding: '28px 32px',
-      width: '100%', maxWidth: '400px', boxShadow: '0 20px 60px rgba(0,0,0,0.15)',
-    },
-    modalTitle: { fontSize: '18px', fontWeight: '800', color: '#0f172a', margin: '0 0 20px' },
-    label: { fontSize: '13px', fontWeight: '600', color: '#475569', display: 'block', marginBottom: '6px' },
-    select: {
-      width: '100%', padding: '10px 12px', border: '1px solid #e2e8f0',
-      borderRadius: '10px', fontSize: '14px', color: '#334155',
-      background: '#f8fafc', outline: 'none', fontFamily: 'inherit', marginBottom: '16px',
-    },
-    input: {
-      width: '100%', padding: '10px 12px', border: '1px solid #e2e8f0',
-      borderRadius: '10px', fontSize: '14px', color: '#334155',
-      background: '#f8fafc', outline: 'none', fontFamily: 'inherit',
-      boxSizing: 'border-box' as const, marginBottom: '20px',
-    },
-    modalActions: { display: 'flex', gap: '10px' },
-    cancelBtn: {
-      flex: 1, padding: '11px', border: '1px solid #e2e8f0', borderRadius: '10px',
-      background: '#f8fafc', fontSize: '14px', fontWeight: '600', color: '#64748b', cursor: 'pointer',
-    },
-    saveBtn: {
-      flex: 1, padding: '11px', border: 'none', borderRadius: '10px',
-      background: 'linear-gradient(135deg,#4f46e5,#7c3aed)', color: '#fff',
-      fontSize: '14px', fontWeight: '700', cursor: 'pointer',
-    },
-  }
+  // Color code budgets progress bar
+  const getProgressColor = (percent: number) => {
+    if (percent >= 90) return 'danger';
+    if (percent >= 75) return 'warning';
+    return 'success';
+  };
 
   return (
-    <div style={{ display: 'flex', background: '#f1f5f9', minHeight: '100vh' }}>
-      <DashboardSidebar navItems={navItems} activePath={location.pathname} />
-
-      {/* Main Content */}
-      <div style={{ flex: 1, display: 'flex', flexDirection: 'column' }}>
-        <DashboardHeader
-          title="Budgets"
-          subtitle="Track and manage your monthly spending limits"
-          right={
-            <button style={s.addBtn} onClick={openAdd}>
-              <Plus size={16} /> New Budget
-            </button>
-          }
-        />
-        <div style={{ flex: 1, padding: '28px', fontFamily: "'DM Sans', sans-serif", overflowY: 'auto' }}>
-
-      {/* Summary */}
-      <div style={s.summaryRow}>
-        <div style={s.sCard()}>
-          <p style={s.sLabel}>Total Budget</p>
-          <p style={s.sValue}>₹{totalLimit.toLocaleString()}</p>
-        </div>
-        <div style={s.sCard()}>
-          <p style={s.sLabel}>Total Spent</p>
-          <p style={{ ...s.sValue, color: '#ef4444' }}>₹{totalSpent.toLocaleString()}</p>
-        </div>
-        <div style={s.sCard('#f0fdf4')}>
-          <p style={s.sLabel}>Remaining</p>
-          <p style={{ ...s.sValue, color: '#16a34a' }}>₹{(totalLimit - totalSpent).toLocaleString()}</p>
-        </div>
-        <div style={s.sCard(overBudget > 0 ? '#fff7f0' : '#f0fdf4')}>
-          <p style={s.sLabel}>Over Budget</p>
-          <p style={{ ...s.sValue, color: overBudget > 0 ? '#ef4444' : '#16a34a' }}>{overBudget} {overBudget === 1 ? 'category' : 'categories'}</p>
-        </div>
-        </div>
-      </div>
-
-      {/* Cards Grid */}
-      <div style={s.grid}>
-        {budgets.map(b => {
-          const p = pct(b.spent, b.limit)
-          const bc = barColor(p)
-          const st = statusLabel(p)
-          return (
-            <div key={b.id} style={s.card}>
-              <div style={s.cardTop}>
-                <div style={s.catWrap}>
-                  <div style={s.iconBox(b.iconBg, b.iconColor)}>{b.icon}</div>
-                  <p style={s.catName}>{b.category}</p>
-                </div>
-                <div style={s.actions}>
-                  <button style={s.actionBtn()} onClick={() => openEdit(b)}><Edit2 size={13}/></button>
-                  <button style={s.actionBtn(true)} onClick={() => deleteB(b.id)}><Trash2 size={13}/></button>
-                </div>
-              </div>
-
-              <div style={s.amounts}>
-                <span style={s.spent}>₹{b.spent.toLocaleString()} spent</span>
-                <span style={s.limit}>of ₹{b.limit.toLocaleString()}</span>
-              </div>
-
-              <div style={s.trackBg}>
-                <div style={s.trackFill(p, bc)}/>
-              </div>
-
-              <div style={s.cardBottom}>
-                <span style={s.pctText}>{p}% used</span>
-                <span style={s.statusBadge(st.color, st.bg)}>{st.icon} {st.text}</span>
-              </div>
-              <p style={s.remaining}>₹{Math.max(0, b.limit - b.spent).toLocaleString()} remaining</p>
-            </div>
-          )
-        })}
-      </div>
-
-      {/* Modal */}
-      {showModal && (
-        <div style={s.overlay}>
-          <div style={s.modal}>
-            <h2 style={s.modalTitle}>{editId !== null ? 'Edit Budget' : 'New Budget'}</h2>
-            <label style={s.label}>Category</label>
-            <select style={s.select} value={form.category} onChange={e => setForm(f => ({ ...f, category: e.target.value }))}>
-              {CATEGORY_OPTIONS.map(c => <option key={c}>{c}</option>)}
-            </select>
-            <label style={s.label}>Monthly Limit (₹)</label>
-            <input
-              style={s.input} type="number" placeholder="e.g. 3000"
-              value={form.limit} onChange={e => setForm(f => ({ ...f, limit: e.target.value }))}
-            />
-            <div style={s.modalActions}>
-              <button style={s.cancelBtn} onClick={() => setShowModal(false)}>Cancel</button>
-              <button style={s.saveBtn} onClick={saveForm}><Save size={14} style={{ marginRight: 6 }}/> Save</button>
-            </div>
+    <PageLayout
+      title="Budgets"
+      onAddExpense={() => {}} // Empty or omit to keep layout but handle adding elsewhere
+      actions={
+        <button className="btn btn-primary" onClick={() => { setEditingBudget(null); setShowForm(true); }}>
+          <Plus size={16} /> Create Budget
+        </button>
+      }
+    >
+      {isLoading ? (
+        <div style={{ display: 'flex', flexDirection: 'column', gap: 16 }}>
+          <div className="skeleton" style={{ height: 250, borderRadius: 'var(--radius-lg)' }} />
+          <div className="grid-3" style={{ gap: 16 }}>
+            {[1, 2, 3].map(n => (
+              <div key={n} className="skeleton" style={{ height: 200, borderRadius: 'var(--radius-lg)' }} />
+            ))}
           </div>
         </div>
+      ) : (
+        <>
+          {/* Charts Row */}
+          {budgetStatuses && budgetStatuses.length > 0 && (
+            <div style={{ marginBottom: 'var(--space-lg)' }}>
+              <BudgetProgressChart data={budgetStatuses} />
+            </div>
+          )}
+
+          {/* Budgets Grid */}
+          {!budgets || budgets.length === 0 ? (
+            <div className="card">
+              <div className="empty-state">
+                <div className="empty-state-icon">
+                  <PiggyBank size={32} />
+                </div>
+                <h3 className="empty-state-title">No active budgets</h3>
+                <p className="empty-state-description">Set up a monthly or weekly budget limit to control your expenses.</p>
+                <button 
+                  className="btn btn-primary" 
+                  style={{ marginTop: 'var(--space-md)' }} 
+                  onClick={() => { setEditingBudget(null); setShowForm(true); }}
+                >
+                  Create First Budget
+                </button>
+              </div>
+            </div>
+          ) : (
+            <div className="grid-3">
+              {budgets.map((b) => {
+                // Find matching status
+                const status = budgetStatuses?.find(s => s.budgetId === b.id);
+                const spent = status?.spentAmount || 0;
+                const percent = status?.percentUsed || 0;
+                
+                return (
+                  <div key={b.id} className="card animate-fade-in-up" style={{ display: 'flex', flexDirection: 'column', height: '100%' }}>
+                    <div className="card-header" style={{ paddingBottom: 'var(--space-sm)' }}>
+                      <div>
+                        <h3 className="section-title" style={{ fontSize: '15px' }}>{b.name}</h3>
+                        <div style={{ display: 'flex', gap: 8, marginTop: 4, alignItems: 'center' }}>
+                          <span className="badge badge-accent" style={{ fontSize: '10px' }}>
+                            {b.period}
+                          </span>
+                          <span 
+                            className="badge" 
+                            style={{ 
+                              fontSize: '10px',
+                              backgroundColor: b.category?.color ? `${b.category.color}20` : 'rgba(255,255,255,0.05)', 
+                              color: b.category?.color || 'var(--color-text-secondary)'
+                            }}
+                          >
+                            {b.category?.name || 'All Categories'}
+                          </span>
+                        </div>
+                      </div>
+                      <div className="flex-gap-xs">
+                        <button className="btn btn-ghost btn-sm" onClick={() => handleEdit(b)} title="Edit">
+                          <Edit2 size={13} />
+                        </button>
+                        <button 
+                          className="btn btn-ghost btn-sm text-danger" 
+                          onClick={() => handleDeleteClick(b.id)} 
+                          title="Delete"
+                          style={{ color: 'var(--color-danger)' }}
+                        >
+                          <Trash2 size={13} />
+                        </button>
+                      </div>
+                    </div>
+                    
+                    <div className="card-body" style={{ flex: 1, display: 'flex', flexDirection: 'column', justifyContent: 'space-between' }}>
+                      <div>
+                        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'baseline', marginBottom: 12 }}>
+                          <span style={{ fontSize: '20px', fontWeight: 'var(--font-weight-bold)' }}>
+                            {formatCurrency(spent)}
+                          </span>
+                          <span style={{ fontSize: '13px', color: 'var(--color-text-muted)' }}>
+                            of {formatCurrency(b.amount)}
+                          </span>
+                        </div>
+
+                        {/* Progress bar */}
+                        <div style={{ marginBottom: 14 }}>
+                          <div className="progress-bar">
+                            <div 
+                              className={`progress-fill ${getProgressColor(percent)}`} 
+                              style={{ width: `${Math.min(100, percent)}%` }}
+                            />
+                          </div>
+                          <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: '11px', color: 'var(--color-text-muted)', marginTop: 4 }}>
+                            <span>{percent.toFixed(0)}% Used</span>
+                            <span>{percent >= 100 ? 'Over limit!' : `${formatCurrency(b.amount - spent)} remaining`}</span>
+                          </div>
+                        </div>
+                      </div>
+
+                      <div style={{ display: 'flex', alignItems: 'center', gap: 6, fontSize: '11px', color: 'var(--color-text-muted)', borderTop: '1px solid var(--color-border)', paddingTop: 10 }}>
+                        <Calendar size={12} />
+                        <span>Starts: {format(new Date(b.startDate), 'MMM dd, yyyy')}</span>
+                      </div>
+                    </div>
+                  </div>
+                );
+              })}
+            </div>
+          )}
+        </>
       )}
-      </div>
-    </div>
-  )
+
+      {/* Budget Create / Edit Form Modal */}
+      {showForm && (
+        <BudgetFormModal
+          budget={editingBudget || undefined}
+          categories={categories || []}
+          onClose={() => setShowForm(false)}
+          createMutation={createBudgetMutation}
+          updateMutation={updateBudgetMutation}
+        />
+      )}
+
+      {/* Delete Confirmation */}
+      <ConfirmDialog
+        isOpen={deletingBudgetId !== null}
+        onClose={() => setDeletingBudgetId(null)}
+        onConfirm={handleDeleteConfirm}
+        title="Delete Budget"
+        message="Are you sure you want to delete this budget limit? This action cannot be undone."
+        variant="danger"
+      />
+    </PageLayout>
+  );
+}
+
+// ── Budget Form Component ──────────────────────────────────────────────────
+interface BudgetFormModalProps {
+  budget?: Budget;
+  categories: any[];
+  onClose: () => void;
+  createMutation: any;
+  updateMutation: any;
+}
+
+function BudgetFormModal({ budget, categories, onClose, createMutation, updateMutation }: BudgetFormModalProps) {
+  const isEdit = !!budget;
+  const [name, setName] = useState(budget?.name || '');
+  const [amount, setAmount] = useState(budget?.amount ? String(budget.amount) : '');
+  const [period, setPeriod] = useState(budget?.period || 'MONTHLY');
+  const [startDate, setStartDate] = useState(budget?.startDate ? budget.startDate.slice(0,10) : new Date().toISOString().slice(0, 10));
+  const [endDate, setEndDate] = useState(budget?.endDate ? budget.endDate.slice(0,10) : '');
+  const [categoryId, setCategoryId] = useState<number | null>(budget?.category?.id || null);
+
+  const isSaving = createMutation.isPending || updateMutation.isPending;
+
+  const handleSubmit = (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!name.trim()) return toast.error('Budget name is required');
+    const parsedAmt = parseFloat(amount);
+    if (isNaN(parsedAmt) || parsedAmt <= 0) return toast.error('Budget limit must be greater than 0');
+
+    const payload = {
+      name: name.trim(),
+      amount: parsedAmt,
+      period,
+      startDate,
+      endDate: endDate || undefined,
+      categoryId: categoryId || undefined,
+    };
+
+    if (isEdit && budget) {
+      updateMutation.mutate(
+        { id: budget.id, data: payload },
+        { onSuccess: onClose }
+      );
+    } else {
+      createMutation.mutate(payload, { onSuccess: onClose });
+    }
+  };
+
+  return (
+    <Modal
+      isOpen={true}
+      onClose={onClose}
+      title={isEdit ? 'Edit Budget Limit' : 'Create Budget Limit'}
+    >
+      <form onSubmit={handleSubmit}>
+        <div className="input-group">
+          <label className="input-label" htmlFor="name">Budget Name</label>
+          <input
+            id="name"
+            className="input"
+            type="text"
+            placeholder="e.g. Monthly Dining, Grocery Budget"
+            value={name}
+            onChange={(e) => setName(e.target.value)}
+            disabled={isSaving}
+          />
+        </div>
+
+        <div className="grid-2">
+          <div className="input-group">
+            <label className="input-label" htmlFor="amount">Limit Amount ($)</label>
+            <input
+              id="amount"
+              className="input"
+              type="number"
+              step="0.01"
+              placeholder="0.00"
+              value={amount}
+              onChange={(e) => setAmount(e.target.value)}
+              disabled={isSaving}
+            />
+          </div>
+
+          <div className="input-group">
+            <label className="input-label" htmlFor="period">Period</label>
+            <select
+              id="period"
+              className="select"
+              value={period}
+              onChange={(e) => setPeriod(e.target.value)}
+              disabled={isSaving}
+            >
+              <option value="WEEKLY">Weekly</option>
+              <option value="MONTHLY">Monthly</option>
+              <option value="YEARLY">Yearly</option>
+            </select>
+          </div>
+        </div>
+
+        <div className="input-group">
+          <label className="input-label" htmlFor="category">Category (Optional)</label>
+          <select
+            id="category"
+            className="select"
+            value={categoryId || ''}
+            onChange={(e) => setCategoryId(e.target.value ? Number(e.target.value) : null)}
+            disabled={isSaving}
+          >
+            <option value="">All Categories</option>
+            {categories.map((c) => (
+              <option key={c.id} value={c.id}>
+                {c.name}
+              </option>
+            ))}
+          </select>
+        </div>
+
+        <div className="grid-2">
+          <div className="input-group">
+            <label className="input-label" htmlFor="startDate">Start Date</label>
+            <input
+              id="startDate"
+              className="input"
+              type="date"
+              value={startDate}
+              onChange={(e) => setStartDate(e.target.value)}
+              disabled={isSaving}
+            />
+          </div>
+
+          <div className="input-group">
+            <label className="input-label" htmlFor="endDate">End Date (Optional)</label>
+            <input
+              id="endDate"
+              className="input"
+              type="date"
+              value={endDate}
+              onChange={(e) => setEndDate(e.target.value)}
+              disabled={isSaving}
+            />
+          </div>
+        </div>
+
+        <div className="modal-footer" style={{ padding: 'var(--space-md) 0 0 0', borderTop: 'none' }}>
+          <button
+            type="button"
+            className="btn btn-secondary"
+            onClick={onClose}
+            disabled={isSaving}
+          >
+            Cancel
+          </button>
+          <button
+            type="submit"
+            className="btn btn-primary"
+            disabled={isSaving}
+          >
+            {isSaving ? 'Saving...' : isEdit ? 'Save Changes' : 'Create Budget'}
+          </button>
+        </div>
+      </form>
+    </Modal>
+  );
 }

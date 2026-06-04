@@ -31,8 +31,8 @@ class ExpenseControllerTest {
     void setup() {
         objectMapper.findAndRegisterModules();
         userRepository = Mockito.mock(UserRepository.class);
-        // Use a lightweight stub for ExpenseService to avoid Mockito issues with final/classes
-        expenseService = new ExpenseService(null, null) {
+        var analyticsService = Mockito.mock(com.smart.expense_tracker.service.AnalyticsService.class);
+        expenseService = new ExpenseService(null, null, null) {
             @Override
             public com.smart.expense_tracker.entity.Expense createExpense(com.smart.expense_tracker.entity.User user, com.smart.expense_tracker.dto.CreateExpenseRequest req) {
                 com.smart.expense_tracker.entity.Expense e = new com.smart.expense_tracker.entity.Expense();
@@ -42,7 +42,7 @@ class ExpenseControllerTest {
                 return e;
             }
         };
-        ExpenseController controller = new ExpenseController(expenseService, userRepository);
+        ExpenseController controller = new ExpenseController(expenseService, analyticsService, userRepository);
         mockMvc = MockMvcBuilders.standaloneSetup(controller).build();
 
         org.springframework.security.authentication.UsernamePasswordAuthenticationToken auth =
