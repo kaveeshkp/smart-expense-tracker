@@ -47,8 +47,8 @@ public class RateLimitFilter extends OncePerRequestFilter {
     protected void doFilterInternal(HttpServletRequest request, HttpServletResponse response, FilterChain filterChain)
             throws ServletException, IOException {
 
-        String path = request.getRequestURI();
-        if (path.endsWith("/auth/login")) {
+        String path = request.getServletPath();
+        if (path.equals("/auth/login")) {
             String ip = getClientIP(request);
             Bucket bucket = cache.computeIfAbsent(ip, k -> createNewBucket());
 
