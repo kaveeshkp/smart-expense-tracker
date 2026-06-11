@@ -36,7 +36,7 @@ public interface ExpenseRepository extends JpaRepository<Expense, Long> {
     @Query("SELECT e.category, COALESCE(SUM(e.amount), 0) as total, COUNT(e) as cnt FROM Expense e WHERE e.user = :user AND e.date BETWEEN :start AND :end AND e.category IS NOT NULL GROUP BY e.category ORDER BY total DESC")
     List<Object[]> sumAmountGroupByCategory(@Param("user") User user, @Param("start") LocalDate start, @Param("end") LocalDate end);
 
-    @Query("SELECT FUNCTION('DATE_FORMAT', e.date, '%Y-%m') as month, COALESCE(SUM(e.amount), 0) as total, COUNT(e) as cnt FROM Expense e WHERE e.user = :user AND e.date >= :startDate GROUP BY FUNCTION('DATE_FORMAT', e.date, '%Y-%m') ORDER BY month ASC")
+    @Query("SELECT FORMATDATETIME(e.date, 'yyyy-MM') as month, COALESCE(SUM(e.amount), 0) as total, COUNT(e) as cnt FROM Expense e WHERE e.user = :user AND e.date >= :startDate GROUP BY FORMATDATETIME(e.date, 'yyyy-MM') ORDER BY month ASC")
     List<Object[]> getMonthlyTrend(@Param("user") User user, @Param("startDate") LocalDate startDate);
 
     @Query("SELECT COALESCE(SUM(e.amount), 0) FROM Expense e WHERE e.user = :user AND e.category = :category AND e.date BETWEEN :start AND :end")

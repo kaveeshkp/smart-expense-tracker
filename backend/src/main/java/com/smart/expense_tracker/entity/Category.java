@@ -14,10 +14,13 @@ public class Category {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
-    @Column(unique = true, nullable = false)
+    @Column(unique = true, nullable = false, length = 100)
     private String name;
 
+    @Column(length = 50)
     private String icon;
+
+    @Column(length = 20)
     private String color;
 
     public Category() {}

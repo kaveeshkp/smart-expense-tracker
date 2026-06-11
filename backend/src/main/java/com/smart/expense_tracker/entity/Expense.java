@@ -50,6 +50,7 @@ public class Expense {
     @Column(length = 3)
     private String currency = "USD";
 
+    @Column(length = 500)
     private String receiptUrl;
 
     private LocalDateTime createdAt = LocalDateTime.now();
